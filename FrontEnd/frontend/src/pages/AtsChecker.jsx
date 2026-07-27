@@ -7,6 +7,7 @@ import SEO from '../components/SEO';
 import { Helmet } from 'react-helmet-async';
 import FeedbackPopup from '../components/FeedbackPopup';
 import './AtsChecker.css';
+import { trackEvent } from '../utils/analytics';
 
 const AtsChecker = () => {
   const [uploading, setUploading] = useState(false);
@@ -43,6 +44,14 @@ const AtsChecker = () => {
         return;
       }
       setAtsResult(normalized);
+
+      // Track ATS score check success
+      trackEvent('ats_score_check', {
+        hasJobDescription: !!jobDescription,
+        score: normalized.atsScore || 0,
+        isAuthenticated
+      });
+
       if (!isAuthenticated) {
         const newCount = usageCount + 1;
         setUsageCount(newCount);

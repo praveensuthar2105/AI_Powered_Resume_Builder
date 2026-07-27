@@ -10,6 +10,8 @@ import { ArrowLeft, Loader2, Save, Download, RefreshCw, Trash2, CheckCircle2, Ch
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '../components/ui/accordion';
 import { Group as PanelGroup, Panel, Separator as PanelResizeHandle } from 'react-resizable-panels';
 import TemplateSelector from '../components/TemplateSelector';
+import { trackEvent } from '../utils/analytics';
+
 
 const FormItem = ({ label, value, onChange, placeholder, type = 'text', colspan = 1 }) => {
   const idId = React.useId ? React.useId() : label.replace(/\s+/g, '-');
@@ -1064,6 +1066,7 @@ ${sections}
     setShowSavedIndicator(true);
     setTimeout(() => setShowSavedIndicator(false), 2000);
     setSnack({ open: true, type: 'success', text: 'Resume draft saved successfully' });
+    trackEvent('resume_save', { type: 'autosave_or_manual' });
   }, []);
 
   const handleFieldChange = useCallback(() => {
@@ -1087,6 +1090,7 @@ ${sections}
       a.remove();
       URL.revokeObjectURL(url);
       setSnack({ open: true, type: 'success', text: 'PDF compilation downloaded' });
+      trackEvent('resume_download', { format: 'pdf', cached: true });
       
       // Trigger feedback popup after successful download
       setTimeout(() => {
@@ -1113,6 +1117,7 @@ ${sections}
         a.remove();
         URL.revokeObjectURL(downloadUrl);
         setSnack({ open: true, type: 'success', text: 'PDF compilation downloaded' });
+        trackEvent('resume_download', { format: 'pdf', cached: false, compiler: useOnlineCompiler ? 'online' : 'local' });
         
         // Trigger feedback popup after successful download
         setTimeout(() => {
@@ -1143,6 +1148,7 @@ ${sections}
     a.remove();
     URL.revokeObjectURL(url);
     setSnack({ open: true, type: 'success', text: 'Source .tex file downloaded' });
+    trackEvent('resume_download', { format: 'tex' });
   };
 
   const handleManualCompile = () => {

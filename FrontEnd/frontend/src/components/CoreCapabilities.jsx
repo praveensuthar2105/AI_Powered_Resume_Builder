@@ -44,30 +44,17 @@ export const FeatureText = ({ icon, eyebrow, heading, description }) => {
 };
 
 const CoreCapabilities = () => {
-  // Scroll reveal observer for features vertical timeline rows
-  useEffect(() => {
-    const rows = document.querySelectorAll('.reveal-row');
-    const obs = new IntersectionObserver((entries) => {
-      entries.forEach(e => {
-        if (e.isIntersecting) {
-          e.target.classList.add('visible');
-          obs.unobserve(e.target);
-        }
-      });
-    }, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
-    rows.forEach(r => obs.observe(r));
-    return () => obs.disconnect();
-  }, []);
+  // Scroll reveal handled by parent LandingPage.jsx
 
   return (
-    <div className="flex flex-col gap-24">
+    <div className="flex flex-col gap-16">
       {/* Feature 1: Intelligent Bullet Writer */}
       <div className="feature-row reveal-row" data-index="1">
         <FeatureText
           icon={Sparkles}
           eyebrow="01 — AI Writing"
-          heading="Intelligent Bullet Writer"
-          description="Converts plain experience descriptions into executive-quality bullet points with quantified impact and ATS-targeted action verbs."
+          heading="Improve weak bullet points"
+          description="Paste a plain description. The tool identifies missing keywords, improves weak phrasing, and formats a metrics-driven statement."
         />
         <div className="feature-visual flex-1 w-full">
           <GlassCard className="p-6">
@@ -94,8 +81,8 @@ const CoreCapabilities = () => {
         <FeatureText
           icon={FileCode}
           eyebrow="02 — Typesetting"
-          heading="LaTeX Compilation"
-          description="Instant on-the-fly PDF rendering via cloud LaTeX ensuring clean structural compliance and precise typesetting."
+          heading="Export a clean, ATS-friendly PDF"
+          description="Export a clean, parseable PDF that keeps its formatting when recruiters and applicant tracking systems open it."
         />
         <div className="feature-visual flex-1 w-full">
           <GlassCard className="p-6">
@@ -129,9 +116,9 @@ const CoreCapabilities = () => {
       <div className="feature-row reveal-row" data-index="3">
         <FeatureText
           icon={Radar}
-          eyebrow="03 — Parsing"
-          heading="Real-Time ATS Parser & Scorer"
-          description="Re-reads your compiled PDF to instantly check for structural formatting errors, missing keywords, and Section weight discrepancies."
+          eyebrow="03 — ATS Analysis"
+          heading="Check your resume formatting"
+          description="The scanner identifies formatting issues, missing keywords, and structural errors that might cause an ATS to reject your application."
         />
         <div className="feature-visual flex-1 w-full">
           <GlassCard className="p-6">
@@ -187,8 +174,8 @@ const CoreCapabilities = () => {
         <FeatureText
           icon={Bot}
           eyebrow="04 — Assistant"
-          heading="AI Resume Agent"
-          description="An interactive chat assistant right alongside your editor that tailors content to target job descriptions and highlights skill gaps."
+          heading="Tailor to the job description"
+          description="Paste a job description alongside your resume. The tool highlights missing skills so you can align your experience with the target role."
         />
         <div className="feature-visual flex-1 w-full">
           <GlassCard className="p-6">
@@ -220,9 +207,9 @@ const CoreCapabilities = () => {
       <div className="feature-row reveal-row" data-index="5">
         <FeatureText
           icon={RefreshCw}
-          eyebrow="05 — Synchronization"
-          heading="Real-Time Sync"
-          description="Zero-latency synchronization between the visual form editor, structured JSON, and raw LaTeX compiler outputs."
+          eyebrow="05 — Live Preview"
+          heading="Live preview as you type"
+          description="Every change you make updates the preview immediately. See exactly how your final resume will look without waiting."
         />
         <div className="feature-visual flex-1 w-full">
           <GlassCard className="p-6">
@@ -261,9 +248,9 @@ const CoreCapabilities = () => {
       <div className="feature-row-reverse reveal-row" data-index="6">
         <FeatureText
           icon={FileSymlink}
-          eyebrow="06 — Conversion"
-          heading="Smart Legacy Import"
-          description="Converts existing PDF or Word resumes into clean, structured profiles ready for instant optimization."
+          eyebrow="06 — Import"
+          heading="Start with your current resume"
+          description="Import an existing PDF or Word document instead of rebuilding from scratch. The parser extracts your experience into editable sections."
         />
         <div className="feature-visual flex-1 w-full">
           <GlassCard className="p-6">

@@ -105,4 +105,9 @@ stop-backend.bat
 !**/public/**/*.ico
 !**/public/**/*.gif
 
+# SaaS Redesign Docs
+saas_redesign_plan.md
+redesign_progress_tracker.md
+
+
 

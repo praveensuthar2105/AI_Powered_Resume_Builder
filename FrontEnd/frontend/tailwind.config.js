@@ -25,10 +25,15 @@ export default {
     extend: {
       colors: {
         'neon-green': '#2563EB', // remapped to blue for legacy compat
+        'brand-teal': '#14B8A6',
+        'brand-primary': '#0D9488',
+        'obsidian-900': '#0F172A',
+        'obsidian-950': '#090D16',
+        'emerald-success': '#10B981',
       },
       fontFamily: {
-        sans: ['DM Sans', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
-        display: ['Space Grotesk', 'sans-serif'],
+        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+        display: ['Outfit', 'sans-serif'],
         mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
       },
       borderRadius: {

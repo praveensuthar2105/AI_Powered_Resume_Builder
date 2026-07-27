@@ -142,17 +142,11 @@ const Navbar = () => {
     >
       {/* ── Glass Container Anchor ── */}
       <div
-        className="max-w-[1200px] mx-auto transition-all duration-500 ease-out rounded-2xl px-5 sm:px-6 py-3 flex items-center justify-between"
-        style={{
-          backgroundColor: 'rgba(255, 255, 255, 0.85)',
-          backdropFilter: 'blur(16px)',
-          WebkitBackdropFilter: 'blur(16px)',
-          borderBottom: '1px solid rgba(20, 100, 80, 0.08)',
-          borderTop: '1px solid rgba(255, 255, 255, 0.7)',
-          borderLeft: '1px solid rgba(255, 255, 255, 0.7)',
-          borderRight: '1px solid rgba(255, 255, 255, 0.7)',
-          boxShadow: scrolled ? '0 10px 25px -5px rgba(20, 100, 80, 0.08)' : '0 1px 3px rgba(20, 100, 80, 0.04)'
-        }}
+        className={`max-w-[1200px] mx-auto transition-all duration-500 ease-out px-5 sm:px-6 py-2.5 flex items-center justify-between border ${
+          scrolled
+            ? 'bg-white/80 backdrop-blur-xl border-slate-200/70 shadow-[0_12px_32px_-8px_rgba(20,184,166,0.15)] rounded-full'
+            : 'bg-white/60 backdrop-blur-md border-transparent shadow-sm rounded-2xl'
+        }`}
       >
         {/* ── Logo ── */}
         <Logo onClick={() => setMobileNavOpen(false)} />
@@ -379,10 +373,10 @@ const Navbar = () => {
               </button>
               <button
                 onClick={handleLogin}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full font-semibold text-sm text-white bg-[#0F1115] border border-white/10 shadow-md shadow-slate-900/20 hover:bg-[#1A1D24] hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
-                style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+                className="inline-flex items-center gap-2 px-5 py-2 rounded-full font-bold text-[13px] text-white bg-gradient-to-br from-teal-500 to-[#0D9488] border border-white/20 shadow-[0_4px_12px_rgba(20,184,166,0.25)] hover:shadow-[0_8px_20px_rgba(20,184,166,0.35)] hover:-translate-y-0.5 transition-all duration-300 cursor-pointer"
+                style={{ fontFamily: "'Outfit', sans-serif" }}
               >
-                <span className="material-symbols-outlined text-base text-[#14B8A6]">auto_awesome</span>
+                <span className="material-symbols-outlined text-base text-white">auto_awesome</span>
                 Get started free
               </button>
             </div>

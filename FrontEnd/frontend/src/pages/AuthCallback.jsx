@@ -5,6 +5,8 @@ import { useAuth } from '../context/AuthContext';
 import { Helmet } from 'react-helmet-async';
 import { AuroraBackground } from '../components/AuroraBackground';
 import { Loader2, AlertCircle } from 'lucide-react';
+import { identifyUser, trackEvent } from '../utils/analytics';
+
 
 const AuthCallback = () => {
   const [searchParams] = useSearchParams();
@@ -47,6 +49,10 @@ const AuthCallback = () => {
             return res.json();
           })
           .then(userData => {
+            // Track user identity & custom event
+            identifyUser(email, { name, role: userData.role || 'USER' });
+            trackEvent('user_authenticate', { method: 'google', email });
+
             login({
               token,
               name,
@@ -63,6 +69,11 @@ const AuthCallback = () => {
           })
           .catch(err => {
             console.warn('Could not fetch user role, defaulting to USER:', err.message);
+            
+            // Track user identity & custom event (fallback)
+            identifyUser(email, { name, role: 'USER' });
+            trackEvent('user_authenticate', { method: 'google', email });
+
             login({
               token,
               name,

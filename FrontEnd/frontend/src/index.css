@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap');
 
 /* ══════════════════════════════════════════════════════════════════
    ATS RESIFY — Aurora Glassmorphic Design System
@@ -44,7 +44,7 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   -webkit-font-smoothing: antialiased;
   background: var(--bg);
   color: var(--fg);
@@ -180,11 +180,11 @@ body {
 }
 
 .section-h2 {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Outfit', sans-serif;
   font-size: clamp(1.6rem, 4vw, 2.6rem);
   font-weight: 700;
   color: var(--fg);
-  margin-bottom: 48px;
+  margin-bottom: 32px;
   letter-spacing: -0.02em;
   line-height: 1.15;
 }
@@ -228,7 +228,7 @@ body {
 @keyframes ping { 75%,100% { transform: scale(2); opacity: 0; } }
 
 .hero-h1 {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Outfit', sans-serif;
   font-size: clamp(1.8rem, 3.8vw, 2.9rem);
   font-weight: 700;
   line-height: 1.15;
@@ -395,10 +395,10 @@ body {
   padding: 8px 4px;
 }
 
-.mock-name { font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 700; color: var(--fg); text-align: center; margin-bottom: 2px; }
+.mock-name { font-family: 'Outfit', sans-serif; font-size: 16px; font-weight: 700; color: var(--fg); text-align: center; margin-bottom: 2px; }
 .mock-contact { font-size: 9px; color: var(--fg4); text-align: center; margin-bottom: 8px; }
 .mock-divider { height: 1px; background: var(--border); margin: 6px 0; }
-.mock-section-title { font-family: 'Space Grotesk', sans-serif; font-size: 11px; font-weight: 700; color: var(--dark); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+.mock-section-title { font-family: 'Outfit', sans-serif; font-size: 11px; font-weight: 700; color: var(--dark); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
 .mock-company { font-size: 11px; font-weight: 600; color: var(--fg2); }
 .mock-date { font-size: 9px; color: var(--fg4); margin-bottom: 6px; }
 .mock-bullet { height: 6px; background: rgba(148, 163, 184, 0.2); border-radius: 3px; margin: 4px 0; width: 90%; }
@@ -427,23 +427,23 @@ body {
 .ats-ring-value {
   position: absolute; inset: 0;
   display: flex; align-items: center; justify-content: center;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Outfit', sans-serif;
   font-size: 22px; font-weight: 700; color: var(--teal);
 }
 .ats-label { font-size: 10px; font-weight: 700; color: var(--fg4); letter-spacing: 0.05em; text-transform: uppercase; }
 
 /* Hero CTAs */
-.hero-ctas { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-top: 40px; margin-bottom: 16px; }
+.hero-ctas { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-top: 32px; margin-bottom: 16px; }
 
 .cta-primary {
   display: inline-flex; align-items: center; gap: 10px;
   padding: 15px 32px;
-  font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 15px;
+  font-family: 'Outfit', sans-serif; font-weight: 600; font-size: 15px;
   color: var(--white);
-  background: var(--dark);
-  border: 1px solid rgba(255,255,255,0.08);
+  background: linear-gradient(135deg, var(--teal) 0%, #0D9488 100%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 99px;
-  box-shadow: 0 4px 20px rgba(15, 17, 21, 0.3), inset 0 1px 0 rgba(255,255,255,0.06);
+  box-shadow: 0 8px 24px rgba(20, 184, 166, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.2);
   cursor: pointer;
   position: relative; overflow: hidden;
   transition: all 0.3s var(--ease);
@@ -453,14 +453,14 @@ body {
   background: linear-gradient(135deg, transparent, rgba(255,255,255,0.08) 50%, transparent);
   transform: translateX(-100%); transition: transform 0.6s ease;
 }
-.cta-primary:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 8px 32px rgba(15, 17, 21, 0.4); }
+.cta-primary:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 12px 32px rgba(20, 184, 166, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.3); }
 .cta-primary:hover::after { transform: translateX(100%); }
 .cta-primary:active { transform: translateY(0) scale(0.98); }
 
 .cta-secondary {
   display: inline-flex; align-items: center; gap: 10px;
   padding: 15px 32px;
-  font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 15px;
+  font-family: 'Outfit', sans-serif; font-weight: 600; font-size: 15px;
   color: var(--dark);
   background: var(--glass-bg);
   backdrop-filter: blur(16px);
@@ -479,25 +479,25 @@ body {
    METRICS BAR
    ══════════════════════════════════════════ */
 .metrics-bar {
-  padding: 48px 24px;
+  padding: 8px 24px;
   position: relative; z-index: 1;
 }
 
 .metrics-inner {
   max-width: 1100px; margin: 0 auto;
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; text-align: center;
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; text-align: center;
   background: var(--glass-bg);
   backdrop-filter: blur(var(--glass-blur));
   border: 1px solid var(--glass-border);
   border-radius: var(--radius);
   box-shadow: var(--glass-shadow);
-  padding: 36px 24px;
+  padding: 16px 24px;
 }
 @media (max-width: 640px) { .metrics-inner { grid-template-columns: repeat(2, 1fr); } }
 
 .metric-item {
   transition: all 0.3s var(--ease);
-  padding: 16px 12px;
+  padding: 4px 8px;
   border-radius: var(--radius-sm);
   cursor: default;
   border: 1px solid transparent;
@@ -514,7 +514,7 @@ body {
   box-shadow: 0 6px 20px rgba(15, 23, 42, 0.05);
 }
 
-.metric-val { font-family: 'Space Grotesk', sans-serif; font-size: clamp(1.6rem, 3vw, 2.4rem); font-weight: 700; letter-spacing: -0.02em; }
+.metric-val { font-family: 'Outfit', sans-serif; font-size: clamp(1.6rem, 3vw, 2.4rem); font-weight: 700; letter-spacing: -0.02em; }
 .metric-label { font-size: 13px; color: var(--fg3); margin-top: 4px; font-weight: 500; }
 
 /* ══════════════════════════════════════════
@@ -595,7 +595,7 @@ body {
 }
 
 .showcase-title {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Outfit', sans-serif;
   font-size: clamp(24px, 4vw, 32px);
   font-weight: 800;
   color: var(--fg);
@@ -636,7 +636,7 @@ body {
 /* ══════════════════════════════════════════
    ATS SCORE SIMULATOR
    ══════════════════════════════════════════ */
-.simulator-section { padding: 60px 24px; position: relative; z-index: 10; }
+.simulator-section { padding-left: 24px; padding-right: 24px; position: relative; z-index: 10; }
 .simulator-wrapper { max-width: 900px; margin: 0 auto; text-align: center; }
 
 .sim-panel {
@@ -646,10 +646,10 @@ body {
   border: 1px solid var(--glass-border);
   border-radius: var(--radius);
   box-shadow: var(--glass-shadow);
-  padding: 32px;
+  padding: 24px;
   text-align: left;
 }
-@media (max-width: 640px) { .sim-panel { padding: 24px; } }
+@media (max-width: 640px) { .sim-panel { padding: 20px; } }
 
 .sim-content { display: grid; grid-template-columns: 1fr 200px; gap: 32px; align-items: center; }
 @media (max-width: 640px) { .sim-content { grid-template-columns: 1fr; } }
@@ -714,13 +714,13 @@ body {
 .sim-gauge-area { display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
 .sim-gauge-svg { width: 160px; height: 160px; }
 .sim-gauge-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-.sim-gauge-number { font-family: 'Space Grotesk', sans-serif; font-size: 42px; font-weight: 700; transition: color 0.3s ease; }
+.sim-gauge-number { font-family: 'Outfit', sans-serif; font-size: 42px; font-weight: 700; transition: color 0.3s ease; }
 .sim-gauge-label { font-size: 11px; font-weight: 700; color: var(--fg4); text-transform: uppercase; letter-spacing: 0.06em; }
 
 /* ══════════════════════════════════════════
    FINAL CTA
    ══════════════════════════════════════════ */
-.cta-section { padding: 40px 24px 60px; position: relative; z-index: 10; clear: both; }
+.cta-section { padding: 48px 24px; position: relative; z-index: 10; clear: both; }
 .cta-wrapper { max-width: 900px; margin: 0 auto; }
 
 .cta-panel {
@@ -740,7 +740,7 @@ body {
 .cta-glow-2 { width: 250px; height: 250px; background: rgba(52, 211, 153, 0.1); bottom: -30px; right: -30px; }
 
 .cta-inner { position: relative; z-index: 2; }
-.cta-h2 { font-family: 'Space Grotesk', sans-serif; font-size: clamp(1.5rem, 4vw, 2.4rem); font-weight: 700; color: var(--fg); margin-bottom: 16px; line-height: 1.15; letter-spacing: -0.02em; }
+.cta-h2 { font-family: 'Outfit', sans-serif; font-size: clamp(1.5rem, 4vw, 2.4rem); font-weight: 700; color: var(--fg); margin-bottom: 16px; line-height: 1.15; letter-spacing: -0.02em; }
 .cta-sub { font-size: 16px; color: var(--fg3); max-width: 480px; margin: 0 auto 32px; line-height: 1.6; }
 .cta-btns { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
 
