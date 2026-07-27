@@ -12,28 +12,28 @@ import { Loader2 } from 'lucide-react';
 import { SpeedInsights } from '@vercel/speed-insights/react';
 import './App.css';
 
-// Lazy load page components to split massive packages (Monaco, Recharts, react-pdf)
-const LandingPage = lazy(() => import('./pages/LandingPage'));
-const EditResume = lazy(() => import('./pages/EditResume'));
-const AtsChecker = lazy(() => import('./pages/AtsChecker'));
-const QuickScore = lazy(() => import('./pages/QuickScore'));
-const JobMatch = lazy(() => import('./pages/JobMatch'));
-const FormatCheck = lazy(() => import('./pages/FormatCheck'));
+import LandingPage from './pages/LandingPage';
+import CreatePrompt from './pages/create/CreatePrompt';
 
-const Features = lazy(() => import('./pages/Features'));
-const About = lazy(() => import('./pages/About'));
-const AuthCallback = lazy(() => import('./pages/AuthCallback'));
-const AdminPanel = lazy(() => import('./pages/AdminPanel'));
-const Login = lazy(() => import('./pages/Login'));
-const Team = lazy(() => import('./pages/Team'));
-const Terms = lazy(() => import('./pages/Terms'));
-const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
-const Contact = lazy(() => import('./pages/Contact'));
-const Feedback = lazy(() => import('./pages/Feedback'));
-const CreateScratch = lazy(() => import('./pages/create/CreateScratch'));
-const CreateImport = lazy(() => import('./pages/create/CreateImport'));
-const CreateLinkedin = lazy(() => import('./pages/create/CreateLinkedin'));
-const CreatePrompt = lazy(() => import('./pages/create/CreatePrompt'));
+import EditResume from './pages/EditResume';
+import AtsChecker from './pages/AtsChecker';
+import QuickScore from './pages/QuickScore';
+import JobMatch from './pages/JobMatch';
+import FormatCheck from './pages/FormatCheck';
+
+import Features from './pages/Features';
+import About from './pages/About';
+import AuthCallback from './pages/AuthCallback';
+import AdminPanel from './pages/AdminPanel';
+import Login from './pages/Login';
+import Team from './pages/Team';
+import Terms from './pages/Terms';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import Contact from './pages/Contact';
+import Feedback from './pages/Feedback';
+import CreateScratch from './pages/create/CreateScratch';
+import CreateImport from './pages/create/CreateImport';
+import CreateLinkedin from './pages/create/CreateLinkedin';
 
 // 404 Not Found Component
 const NotFound = () => (

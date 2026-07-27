@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import SEO from '../components/SEO';
 import Navbar from '../components/Navbar';
@@ -90,16 +90,18 @@ const useReveal = (delay = 0) => {
 };
 
 /* ── Reusable secondary glassmorphism button ── */
-const SecondaryButton = ({ onClick, children, icon: Icon, className = '', ariaLabel }) => {
+const SecondaryButton = ({ onClick, to, children, icon: Icon, className = '', ariaLabel }) => {
+  const Component = to ? Link : 'button';
   return (
-    <button 
+    <Component 
+      to={to}
       onClick={onClick} 
       aria-label={ariaLabel}
-      className={`cta-secondary focus-visible:ring-2 focus-visible:ring-teal-500/50 outline-none ${className}`}
+      className={`cta-secondary focus-visible:ring-2 focus-visible:ring-teal-500/50 outline-none no-underline flex items-center justify-center ${className}`}
     >
       {Icon && <Icon className="w-4 h-4 text-teal-600 flex-shrink-0" />}
       {children}
-    </button>
+    </Component>
   );
 };
 
@@ -492,14 +494,14 @@ const LandingPage = () => {
 
               {/* CTA Buttons with Spacing Rhythm and Trust Badges */}
               <div className="hero-ctas mt-8">
-                <button 
-                  onClick={() => navigate('/create-resume/prompt')} 
+                <Link 
+                  to="/create-resume/prompt"
                   aria-label="Start Building My Resume for free"
-                  className="cta-primary focus-visible:ring-2 focus-visible:ring-teal-500/50 outline-none"
+                  className="cta-primary focus-visible:ring-2 focus-visible:ring-teal-500/50 outline-none no-underline flex items-center justify-center"
                 >
-                  <Sparkles className="w-4 h-4 text-white" />
+                  <Sparkles className="w-4 h-4 text-white flex-shrink-0" />
                   Start Building My Resume
-                </button>
+                </Link>
                 <SecondaryButton 
                   onClick={() => simRef.current?.scrollIntoView({ behavior: 'smooth' })} 
                   icon={ScanSearch}
@@ -911,16 +913,16 @@ const LandingPage = () => {
               <p className="cta-sub text-slate-500 mb-6">Build an ATS-friendly resume in minutes. Start with a clean layout and apply with confidence.</p>
               
               <div className="cta-btns mb-8">
-                <button 
-                  onClick={() => navigate('/create-resume/prompt')} 
+                <Link 
+                  to="/create-resume/prompt"
                   aria-label="Start Building My Resume for free"
-                  className="cta-primary focus-visible:ring-2 focus-visible:ring-teal-500/50 outline-none"
+                  className="cta-primary focus-visible:ring-2 focus-visible:ring-teal-500/50 outline-none no-underline flex items-center justify-center"
                 >
-                  <Sparkles className="w-4 h-4 text-white" />
+                  <Sparkles className="w-4 h-4 text-white flex-shrink-0" />
                   Start Building My Resume
-                </button>
+                </Link>
                 <SecondaryButton 
-                  onClick={() => navigate('/ats-checker')} 
+                  to="/ats-checker"
                   icon={ScanSearch}
                   ariaLabel="Check current ATS score"
                 >

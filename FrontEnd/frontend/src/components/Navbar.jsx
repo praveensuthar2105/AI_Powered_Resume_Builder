@@ -203,13 +203,11 @@ const Navbar = () => {
               </div>
               <div className="grid grid-cols-2 gap-2">
                 {createResumeOptions.map((opt, idx) => (
-                  <div
+                  <RouterLink
                     key={idx}
-                    onClick={() => {
-                      setActiveDropdown(null);
-                      navigate(opt.route);
-                    }}
-                    className="group/item flex items-start gap-3 p-3 rounded-xl border border-slate-100 hover:border-[#14B8A6]/30 hover:bg-[#14B8A6]/8 transition-all duration-200 cursor-pointer"
+                    to={opt.route}
+                    onClick={() => setActiveDropdown(null)}
+                    className="group/item flex items-start gap-3 p-3 rounded-xl border border-slate-100 hover:border-[#14B8A6]/30 hover:bg-[#14B8A6]/8 transition-all duration-200 cursor-pointer no-underline"
                   >
                     <div className="w-10 h-10 rounded-xl bg-[#14B8A6]/10 text-[#0D9488] flex items-center justify-center flex-shrink-0 group-hover/item:scale-108 group-hover/item:bg-[#14B8A6] group-hover/item:text-white transition-all duration-200">
                       <span className="material-symbols-outlined text-lg">{opt.icon}</span>
@@ -218,7 +216,7 @@ const Navbar = () => {
                       <div className="text-sm font-bold text-[#0F1115] group-hover/item:text-[#0D9488] transition-colors">{opt.title}</div>
                       <div className="text-xs text-slate-500 leading-snug mt-0.5">{opt.description}</div>
                     </div>
-                  </div>
+                  </RouterLink>
                 ))}
               </div>
             </div>
@@ -262,13 +260,11 @@ const Navbar = () => {
               </div>
               <div className="flex flex-col gap-1.5">
                 {atsCheckerOptions.map((opt, idx) => (
-                  <div
+                  <RouterLink
                     key={idx}
-                    onClick={() => {
-                      setActiveDropdown(null);
-                      navigate(opt.route);
-                    }}
-                    className="group/item flex items-start gap-3 p-3 rounded-xl border border-transparent hover:border-[#14B8A6]/30 hover:bg-[#14B8A6]/8 transition-all duration-200 cursor-pointer"
+                    to={opt.route}
+                    onClick={() => setActiveDropdown(null)}
+                    className="group/item flex items-start gap-3 p-3 rounded-xl border border-transparent hover:border-[#14B8A6]/30 hover:bg-[#14B8A6]/8 transition-all duration-200 cursor-pointer no-underline"
                   >
                     <div className="w-10 h-10 rounded-xl bg-[#14B8A6]/10 text-[#0D9488] flex items-center justify-center flex-shrink-0 group-hover/item:scale-108 group-hover/item:bg-[#14B8A6] group-hover/item:text-white transition-all duration-200">
                       <span className="material-symbols-outlined text-lg">{opt.icon}</span>
@@ -277,7 +273,7 @@ const Navbar = () => {
                       <div className="text-sm font-bold text-[#0F1115] group-hover/item:text-[#0D9488] transition-colors">{opt.title}</div>
                       <div className="text-xs text-slate-500 leading-snug mt-0.5">{opt.description}</div>
                     </div>
-                  </div>
+                  </RouterLink>
                 ))}
               </div>
             </div>
@@ -425,20 +421,18 @@ const Navbar = () => {
             {mobileExpanded.create && (
               <div className="px-3 pb-3 pt-1 flex flex-col gap-1.5 border-t border-slate-100 bg-white/60">
                 {createResumeOptions.map((opt, idx) => (
-                  <div
+                  <RouterLink
                     key={idx}
-                    onClick={() => {
-                      setMobileNavOpen(false);
-                      navigate(opt.route);
-                    }}
-                    className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-[#14B8A6]/10 transition-colors cursor-pointer"
+                    to={opt.route}
+                    onClick={() => setMobileNavOpen(false)}
+                    className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-[#14B8A6]/10 transition-colors cursor-pointer no-underline"
                   >
                     <span className="material-symbols-outlined text-base text-[#0D9488] mt-0.5">{opt.icon}</span>
                     <div>
                       <div className="text-xs font-bold text-slate-800">{opt.title}</div>
                       <div className="text-[11px] text-slate-500 leading-tight">{opt.description}</div>
                     </div>
-                  </div>
+                  </RouterLink>
                 ))}
               </div>
             )}
@@ -459,20 +453,18 @@ const Navbar = () => {
             {mobileExpanded.ats && (
               <div className="px-3 pb-3 pt-1 flex flex-col gap-1.5 border-t border-slate-100 bg-white/60">
                 {atsCheckerOptions.map((opt, idx) => (
-                  <div
+                  <RouterLink
                     key={idx}
-                    onClick={() => {
-                      setMobileNavOpen(false);
-                      navigate(opt.route);
-                    }}
-                    className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-[#14B8A6]/10 transition-colors cursor-pointer"
+                    to={opt.route}
+                    onClick={() => setMobileNavOpen(false)}
+                    className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-[#14B8A6]/10 transition-colors cursor-pointer no-underline"
                   >
                     <span className="material-symbols-outlined text-base text-[#0D9488] mt-0.5">{opt.icon}</span>
                     <div>
                       <div className="text-xs font-bold text-slate-800">{opt.title}</div>
                       <div className="text-[11px] text-slate-500 leading-tight">{opt.description}</div>
                     </div>
-                  </div>
+                  </RouterLink>
                 ))}
               </div>
             )}
