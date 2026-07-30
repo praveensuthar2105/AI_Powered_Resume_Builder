@@ -117,27 +117,6 @@ function AppContent() {
   const location = useLocation();
   const isHome = location.pathname === '/';
 
-  React.useEffect(() => {
-    // Prefetch likely next-route chunks after the initial page settles.
-    // Using dynamic import() so Vite can resolve the chunk URLs.
-    const prefetchRoutes = () => {
-      import('./pages/create/CreatePrompt').catch(() => {});
-      import('./pages/QuickScore').catch(() => {});
-      import('./pages/Login').catch(() => {});
-    };
-
-    // Wait until main thread is idle, then prefetch the top 3 routes
-    const id = typeof requestIdleCallback !== 'undefined'
-      ? requestIdleCallback(prefetchRoutes)
-      : setTimeout(prefetchRoutes, 3000);
-
-    return () => {
-      typeof cancelIdleCallback !== 'undefined'
-        ? cancelIdleCallback(id)
-        : clearTimeout(id);
-    };
-  }, []);
-
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', display: 'flex', flexDirection: 'column' }}>
       {!isHome && <Navbar />}

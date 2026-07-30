@@ -45,8 +45,8 @@ export default defineConfig({
               return 'vendor-antd';
             }
 
-            // ── PDF generation libs (only used on specific pages) ──
-            if (id.includes('jspdf') || id.includes('html2canvas') || id.includes('html2pdf.js') || id.includes('react-pdf')) {
+            // ── PDF generation & parsing libs (only used on specific pages) ──
+            if (id.includes('jspdf') || id.includes('html2canvas') || id.includes('html2pdf') || id.includes('react-pdf') || id.includes('pdfjs')) {
               return 'vendor-pdf';
             }
 

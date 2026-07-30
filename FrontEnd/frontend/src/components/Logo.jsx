@@ -8,6 +8,8 @@ const Logo = ({ iconOnly = false, className = '', onClick }) => {
       <img 
         src="/logo.png" 
         alt="ATS Resify Logo" 
+        width="36"
+        height="36"
         className="w-9 h-9 object-contain transition-transform duration-300 group-hover:scale-105" 
       />
       {!iconOnly && (
