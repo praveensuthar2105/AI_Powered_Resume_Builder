@@ -1,3 +1,4 @@
+@layer base {
 /* ResumeDashboard Styles - Modern & Aesthetic - Enhanced */
 
 * {
@@ -965,3 +966,5 @@
 ::-webkit-scrollbar-thumb:hover {
     background: var(--text-light);
 }
+
+} /* end @layer base */

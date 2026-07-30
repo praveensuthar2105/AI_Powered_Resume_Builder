@@ -1,3 +1,4 @@
+@layer base {
 /* Global App Styles - Modern & Aesthetic */
 
 * {
@@ -347,3 +348,4 @@ button {
         text-decoration: none;
     }
 }
+} /* end @layer base */

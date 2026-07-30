@@ -1,5 +1,7 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+@config "../tailwind.config.js";
 
+@layer base {
 /* ══════════════════════════════════════════════════════════════════
    ATS RESIFY — Aurora Glassmorphic Design System
    Deep ambient mesh + frosted glass panels + reactive interactions
@@ -796,3 +798,5 @@ a, button { transition: all 0.25s var(--ease); }
   opacity: 1;
   transform: translateY(0);
 }
+
+} /* end @layer base */

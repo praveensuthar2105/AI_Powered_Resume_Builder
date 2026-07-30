@@ -2,12 +2,19 @@
 <html lang="en">
 
 <head>
-  <!-- Google Tag Manager -->
-  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-  })(window,document,'script','dataLayer','GTM-PJMTC7WN');</script>
+  <!-- Google Tag Manager — deferred to avoid blocking first paint -->
+  <script>
+    window.addEventListener('load', function() {
+      requestIdleCallback ? requestIdleCallback(loadGTM) : setTimeout(loadGTM, 2000);
+      function loadGTM() {
+        (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+        new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+        j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+        'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+        })(window,document,'script','dataLayer','GTM-PJMTC7WN');
+      }
+    });
+  </script>
   <!-- End Google Tag Manager -->
   <meta charset="UTF-8" />
   <link rel="icon" type="image/png" href="/logo.png" />
@@ -52,58 +59,20 @@
   <!-- ===== FONTS ===== -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <!-- Critical fonts loaded normally -->
+  <!-- All fonts loaded async to avoid render-blocking -->
   <link rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700;800&display=swap" />
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap"
+    media="print" onload="this.media='all'" />
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" /></noscript>
   <link rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" />
-  <!-- Non-critical font: load async to avoid blocking -->
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+    media="print" onload="this.media='all'" />
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" /></noscript>
   <link rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700&display=optional"
     media="print" onload="this.media='all'" />
 
-  <!-- ===== TAILWIND CDN (restored — site styling depends on this) ===== -->
-  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            'brutal-black': '#ffffff',
-            'brutal-white': '#000000',
-            'neon-green': '#39ff14',
-          },
-          fontFamily: {
-            sans: ['DM Sans', 'Inter', 'sans-serif'],
-            mono: ['JetBrains Mono', 'monospace'],
-          },
-          borderWidth: {
-            3: '3px',
-          },
-        },
-      },
-    };
-  </script>
-  <style type="text/tailwindcss">
-    .brutal-border { border: 2px solid #000000; }
-    .brutal-shadow { box-shadow: 6px 6px 0px 0px #39ff14; }
-    .brutal-shadow-white { box-shadow: 4px 4px 0px 0px #000000; }
-    .grid-bg {
-      background-image: radial-gradient(#00000022 1px, transparent 1px);
-      background-size: 32px 32px;
-    }
-    .scanline {
-      width: 100%; height: 2px; background: rgba(0,0,0,0.05);
-      position: fixed; z-index: 100; pointer-events: none;
-      animation: scan 8s linear infinite;
-    }
-    @keyframes scan { 0% { top: 0; } 100% { top: 100%; } }
-    .wireframe-cube {
-      width: 100%; height: 100%; border: 1px solid #39ff14; position: relative;
-      background: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(57,255,20,0.05) 10px, rgba(57,255,20,0.05) 11px);
-    }
-  </style>
+  <!-- Tailwind CDN REMOVED — npm Tailwind v4 build pipeline handles all styles at build time -->
 
 
 
@@ -122,14 +91,7 @@
     });
   </script>
 
-  <!-- ===== GOOGLE ANALYTICS (GA4) — defer so it doesn't block render ===== -->
-  <script defer src="https://www.googletagmanager.com/gtag/js?id=G-SEV1TV5SW0"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag() { dataLayer.push(arguments); }
-    gtag('js', new Date());
-    gtag('config', 'G-SEV1TV5SW0');
-  </script>
+  <!-- GA4 REMOVED from HTML — loaded by src/utils/analytics.js to avoid duplication -->
 </head>
 
 <body>

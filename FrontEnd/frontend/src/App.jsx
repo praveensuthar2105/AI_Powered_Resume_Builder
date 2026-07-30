@@ -12,28 +12,27 @@ import { Loader2 } from 'lucide-react';
 import { SpeedInsights } from '@vercel/speed-insights/react';
 import './App.css';
 
-import LandingPage from './pages/LandingPage';
-import CreatePrompt from './pages/create/CreatePrompt';
-
-import EditResume from './pages/EditResume';
-import AtsChecker from './pages/AtsChecker';
-import QuickScore from './pages/QuickScore';
-import JobMatch from './pages/JobMatch';
-import FormatCheck from './pages/FormatCheck';
-
-import Features from './pages/Features';
-import About from './pages/About';
-import AuthCallback from './pages/AuthCallback';
-import AdminPanel from './pages/AdminPanel';
-import Login from './pages/Login';
-import Team from './pages/Team';
-import Terms from './pages/Terms';
-import PrivacyPolicy from './pages/PrivacyPolicy';
-import Contact from './pages/Contact';
-import Feedback from './pages/Feedback';
-import CreateScratch from './pages/create/CreateScratch';
-import CreateImport from './pages/create/CreateImport';
-import CreateLinkedin from './pages/create/CreateLinkedin';
+// ── Lazy-loaded pages (code-split into separate chunks) ──────────
+const LandingPage = lazy(() => import('./pages/LandingPage'));
+const CreatePrompt = lazy(() => import('./pages/create/CreatePrompt'));
+const EditResume = lazy(() => import('./pages/EditResume'));
+const AtsChecker = lazy(() => import('./pages/AtsChecker'));
+const QuickScore = lazy(() => import('./pages/QuickScore'));
+const JobMatch = lazy(() => import('./pages/JobMatch'));
+const FormatCheck = lazy(() => import('./pages/FormatCheck'));
+const Features = lazy(() => import('./pages/Features'));
+const About = lazy(() => import('./pages/About'));
+const AuthCallback = lazy(() => import('./pages/AuthCallback'));
+const AdminPanel = lazy(() => import('./pages/AdminPanel'));
+const Login = lazy(() => import('./pages/Login'));
+const Team = lazy(() => import('./pages/Team'));
+const Terms = lazy(() => import('./pages/Terms'));
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
+const Contact = lazy(() => import('./pages/Contact'));
+const Feedback = lazy(() => import('./pages/Feedback'));
+const CreateScratch = lazy(() => import('./pages/create/CreateScratch'));
+const CreateImport = lazy(() => import('./pages/create/CreateImport'));
+const CreateLinkedin = lazy(() => import('./pages/create/CreateLinkedin'));
 
 // 404 Not Found Component
 const NotFound = () => (
@@ -119,21 +118,24 @@ function AppContent() {
   const isHome = location.pathname === '/';
 
   React.useEffect(() => {
-    // Preload route chunks in the background after initial render has settled
-    const preloadRoutes = () => {
-      import('./pages/EditResume').catch(() => {});
-      import('./pages/AtsChecker').catch(() => {});
-      import('./pages/Login').catch(() => {});
-      import('./pages/create/CreateScratch').catch(() => {});
-      import('./pages/create/CreateImport').catch(() => {});
-      import('./pages/create/CreateLinkedin').catch(() => {});
+    // Prefetch likely next-route chunks after the initial page settles.
+    // Using dynamic import() so Vite can resolve the chunk URLs.
+    const prefetchRoutes = () => {
       import('./pages/create/CreatePrompt').catch(() => {});
-      import('./pages/Features').catch(() => {});
-      import('./pages/About').catch(() => {});
+      import('./pages/QuickScore').catch(() => {});
+      import('./pages/Login').catch(() => {});
     };
 
-    const timer = setTimeout(preloadRoutes, 2500);
-    return () => clearTimeout(timer);
+    // Wait until main thread is idle, then prefetch the top 3 routes
+    const id = typeof requestIdleCallback !== 'undefined'
+      ? requestIdleCallback(prefetchRoutes)
+      : setTimeout(prefetchRoutes, 3000);
+
+    return () => {
+      typeof cancelIdleCallback !== 'undefined'
+        ? cancelIdleCallback(id)
+        : clearTimeout(id);
+    };
   }, []);
 
   return (

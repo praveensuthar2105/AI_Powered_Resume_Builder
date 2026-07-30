@@ -25,6 +25,8 @@ export default {
     extend: {
       colors: {
         'neon-green': '#2563EB', // remapped to blue for legacy compat
+        'brutal-black': '#ffffff', // legacy theme compat (overridden by index.css)
+        'brutal-white': '#000000', // legacy theme compat (overridden by index.css)
         'brand-teal': '#14B8A6',
         'brand-primary': '#0D9488',
         'obsidian-900': '#0F172A',
@@ -39,6 +41,9 @@ export default {
       borderRadius: {
         'xl': '16px',
         '2xl': '24px',
+      },
+      borderWidth: {
+        3: '3px',
       },
     },
   },
