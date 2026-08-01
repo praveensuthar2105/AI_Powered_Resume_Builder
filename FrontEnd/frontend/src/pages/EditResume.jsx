@@ -11,6 +11,25 @@ import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '..
 import { Group as PanelGroup, Panel, Separator as PanelResizeHandle } from 'react-resizable-panels';
 import TemplateSelector from '../components/TemplateSelector';
 import { trackEvent } from '../utils/analytics';
+import { Reorder, useDragControls } from 'framer-motion';
+
+const ReorderableSectionItem = ({ sectionKey, children }) => {
+  const dragControls = useDragControls();
+
+  return (
+    <Reorder.Item
+      value={sectionKey}
+      dragListener={false}
+      dragControls={dragControls}
+      className="list-none mb-5 p-0"
+      style={{ position: 'relative' }}
+      whileDrag={{ scale: 1.02, boxShadow: '0 20px 40px rgba(0,0,0,0.12)', zIndex: 50 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+    >
+      {React.cloneElement(children, { dragControls })}
+    </Reorder.Item>
+  );
+};
 
 
 const FormItem = ({ label, value, onChange, placeholder, type = 'text', colspan = 1 }) => {
@@ -65,7 +84,7 @@ const SectionCard = ({
   onAdd, 
   value, 
   isExpanded,
-  dragHandleProps,
+  dragControls,
   onTitleDoubleClick,
   isEditingTitle,
   editingTitleValue,
@@ -84,13 +103,13 @@ const SectionCard = ({
         boxShadow: isExpanded ? '0 18px 36px rgba(20, 100, 80, 0.10)' : '0 10px 24px rgba(20, 40, 35, 0.055)'
       }}
     >
-      <div className="flex items-center w-full hover:bg-slate-50/60 transition-colors pr-4">
-        {/* Six dot handle for drag-and-drop indicator */}
-        {dragHandleProps && (
+      <div className="flex items-center w-full hover:bg-slate-50/60 transition-colors pr-5">
+        {/* Six dot handle for dynamic drag-and-drop */}
+        {dragControls && (
           <div 
-            {...dragHandleProps} 
-            className="flex flex-col gap-0.5 px-3 py-4 text-slate-300 hover:text-teal-600 transition-colors cursor-grab active:cursor-grabbing shrink-0 select-none"
-            title="Drag to reorder section"
+            onPointerDown={(e) => dragControls.start(e)}
+            className="flex flex-col gap-0.5 pl-4 pr-2 py-4 text-slate-400 hover:text-teal-600 transition-colors cursor-grab active:cursor-grabbing shrink-0 select-none touch-none"
+            title="Click & hold 6-dot icon to drag section dynamically"
           >
             <div className="flex gap-0.5">
               <span className="w-1 h-1 rounded-full bg-current"></span>
@@ -110,23 +129,23 @@ const SectionCard = ({
         <div className="flex-1 min-w-0">
           <AccordionTrigger 
             ref={triggerRef}
-            className="group py-4 px-4 hover:no-underline font-sans transition-colors"
+            className="group py-4 px-3 hover:no-underline font-sans transition-colors"
           >
-            <div className="flex items-center gap-3 text-left min-w-0" onClick={(e) => {
+            <div className="flex items-center gap-3.5 text-left min-w-0" onClick={(e) => {
               // Prevent expand trigger when clicking the input field to rename
               if (isEditingTitle) {
                 e.stopPropagation();
               }
             }}>
               <div 
-                className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 relative overflow-hidden transition-all duration-300 bg-white"
+                className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 relative overflow-hidden transition-all duration-300 bg-white"
                 style={{
                   border: '1px solid rgba(20, 180, 140, 0.18)',
                   boxShadow: '0 6px 16px rgba(20, 100, 80, 0.08)',
                   color: '#0D9488'
                 }}
               >
-                {typeof icon === 'string' ? <span className="material-symbols-outlined text-[19px] font-semibold">{icon}</span> : icon}
+                {typeof icon === 'string' ? <span className="material-symbols-outlined text-[20px] font-semibold">{icon}</span> : icon}
               </div>
               <div className="min-w-0 flex-1">
                 {isEditingTitle ? (
@@ -156,7 +175,7 @@ const SectionCard = ({
                     <span className="opacity-0 group-hover:opacity-40 transition-opacity text-[10px] font-medium text-slate-400">(double-click to rename)</span>
                   </h3>
                 )}
-                {subtitle && <p className="text-[11px] font-medium font-sans transition-colors truncate" style={{ color: 'rgba(20, 70, 60, 0.56)' }}>{subtitle}</p>}
+                {subtitle && <p className="text-[11px] font-medium font-sans transition-colors truncate mt-0.5" style={{ color: 'rgba(20, 70, 60, 0.56)' }}>{subtitle}</p>}
               </div>
             </div>
           </AccordionTrigger>
@@ -168,8 +187,8 @@ const SectionCard = ({
           </div>
         )}
       </div>
-      <AccordionContent className="pb-5 px-4 font-sans">
-        <div className="space-y-4 pt-4 border-t" style={{ borderColor: 'rgba(20, 100, 80, 0.08)' }}>
+      <AccordionContent className="pb-6 px-6 pt-1 font-sans">
+        <div className="space-y-5 pt-5 border-t" style={{ borderColor: 'rgba(20, 100, 80, 0.08)' }}>
           {children}
           {buttonText && (
             <button 
@@ -295,6 +314,21 @@ const EditResume = () => {
       order: newOrder
     }));
     handleFieldChange();
+  };
+
+  // Drag-and-drop section reordering state via 6-dot grip handle
+  const [draggedSectionIndex, setDraggedSectionIndex] = useState(null);
+
+  const handleSectionDrop = (targetIndex) => {
+    if (draggedSectionIndex === null || draggedSectionIndex === targetIndex) return;
+    setSectionConfig(prev => {
+      const newOrder = [...prev.order];
+      const [movedItem] = newOrder.splice(draggedSectionIndex, 1);
+      newOrder.splice(targetIndex, 0, movedItem);
+      return { ...prev, order: newOrder };
+    });
+    handleFieldChange();
+    setDraggedSectionIndex(null);
   };
 
   // Handle title rename submit
@@ -1363,394 +1397,378 @@ ${sections}
               </div>
             </SectionCard>
 
-            {/* 2. Dynamically rendered customizable sections */}
-            {sectionConfig.order.map((sectionKey, index) => {
-              if (sectionConfig.hidden.includes(sectionKey)) return null;
+            {/* 2. Dynamically rendered customizable sections with Framer Motion fluid reordering */}
+            <Reorder.Group 
+              axis="y" 
+              values={sectionConfig.order.filter(k => !sectionConfig.hidden.includes(k))}
+              onReorder={(newVisibleOrder) => {
+                const hiddenSections = sectionConfig.order.filter(k => sectionConfig.hidden.includes(k));
+                setSectionConfig(prev => ({
+                  ...prev,
+                  order: [...newVisibleOrder, ...hiddenSections]
+                }));
+                handleFieldChange();
+              }}
+              className="mt-5 space-y-5 list-none p-0 m-0"
+            >
+              {sectionConfig.order.map((sectionKey) => {
+                if (sectionConfig.hidden.includes(sectionKey)) return null;
 
-              const isEditing = editingSectionKey === sectionKey;
-              const displayTitle = sectionConfig.titles[sectionKey] || sectionKey.toUpperCase();
+                const isEditing = editingSectionKey === sectionKey;
+                const displayTitle = sectionConfig.titles[sectionKey] || sectionKey.toUpperCase();
 
-              // Helper buttons to swap orders via click
-              const reorderAction = (
-                <div className="flex items-center gap-1">
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); moveSection(index, 'up'); }}
-                    disabled={index === 0}
-                    className="p-1 hover:bg-slate-100 text-slate-400 hover:text-teal-600 rounded disabled:opacity-30 disabled:hover:bg-transparent"
-                    title="Move Section Up"
-                  >
-                    ▲
-                  </button>
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); moveSection(index, 'down'); }}
-                    disabled={index === sectionConfig.order.length - 1}
-                    className="p-1 hover:bg-slate-100 text-slate-400 hover:text-teal-600 rounded disabled:opacity-30 disabled:hover:bg-transparent"
-                    title="Move Section Down"
-                  >
-                    ▼
-                  </button>
-                  <button 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSectionConfig(prev => ({
-                        ...prev,
-                        hidden: [...prev.hidden, sectionKey]
-                      }));
-                      handleFieldChange();
-                      setSnack({ open: true, type: 'info', text: `Section "${displayTitle}" removed. Add it back from the bottom options if needed.` });
-                    }}
-                    className="p-1 hover:bg-rose-50 text-slate-400 hover:text-rose-600 rounded ml-1"
-                    title="Remove Section"
-                  >
-                    ✕
-                  </button>
-                </div>
-              );
-
-              // Render corresponding cards depending on target sectionKey
-              if (sectionKey === 'summary') {
-                return (
-                  <SectionCard 
-                    key="summary"
-                    icon="history_edu" 
-                    title={displayTitle} 
-                    subtitle="Executive Abstract"
-                    value="summary"
-                    isExpanded={activeAccordionSections.includes('summary')}
-                    dragHandleProps={{}} // Six dot visual placeholder
-                    onTitleDoubleClick={() => {
-                      setEditingSectionKey('summary');
-                      setEditingTitleValue(displayTitle);
-                    }}
-                    isEditingTitle={isEditing}
-                    editingTitleValue={editingTitleValue}
-                    onTitleChange={(e) => setEditingTitleValue(e.target.value)}
-                    onTitleBlur={() => submitRename('summary')}
-                    onTitleKeyDown={(e) => e.key === 'Enter' && submitRename('summary')}
-                    headerAction={reorderAction}
-                  >
-                    <FormItem label="Executive Summary" value={formData.summary} onChange={(e) => updateField('summary', e.target.value)} type="textarea" placeholder="Detail your career objectives, core strengths, and what sets you apart..." />
-                  </SectionCard>
+                // Helper action (Remove Section)
+                const reorderAction = (
+                  <div className="flex items-center gap-1">
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSectionConfig(prev => ({
+                          ...prev,
+                          hidden: [...prev.hidden, sectionKey]
+                        }));
+                        handleFieldChange();
+                        setSnack({ open: true, type: 'info', text: `Section "${displayTitle}" removed. Add it back from the bottom options if needed.` });
+                      }}
+                      className="p-1 hover:bg-rose-50 text-slate-400 hover:text-rose-600 rounded ml-1 cursor-pointer"
+                      title="Remove Section"
+                    >
+                      ✕
+                    </button>
+                  </div>
                 );
-              }
 
-              if (sectionKey === 'skills') {
-                return (
-                  <SectionCard 
-                    key="skills"
-                    icon="code" 
-                    title={displayTitle} 
-                    subtitle="Core Competencies" 
-                    buttonText="Add Skill Category" 
-                    onAdd={addSkill}
-                    value="skills"
-                    isExpanded={activeAccordionSections.includes('skills')}
-                    dragHandleProps={{}}
-                    onTitleDoubleClick={() => {
-                      setEditingSectionKey('skills');
-                      setEditingTitleValue(displayTitle);
-                    }}
-                    isEditingTitle={isEditing}
-                    editingTitleValue={editingTitleValue}
-                    onTitleChange={(e) => setEditingTitleValue(e.target.value)}
-                    onTitleBlur={() => submitRename('skills')}
-                    onTitleKeyDown={(e) => e.key === 'Enter' && submitRename('skills')}
-                    headerAction={reorderAction}
-                  >
-                    {formData.skills.map((skill, index) => (
-                      <div key={index} className="relative border-l-2 border-teal-500/20 pl-5 py-2 mb-6 group transition-all hover:border-teal-500">
-                        <button 
-                          onClick={() => removeSkill(index)} 
-                          className="absolute top-4 right-4 w-8 h-8 rounded-xl bg-slate-100 hover:bg-rose-50 border border-transparent hover:border-rose-100 text-slate-500 hover:text-rose-500 flex items-center justify-center transition-all cursor-pointer"
-                        >
-                          <span className="material-symbols-outlined text-[18px]">delete</span>
-                        </button>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <FormItem label="Category Name" value={skill.title} onChange={(e) => {
-                            const newSkills = [...formData.skills];
-                            newSkills[index] = { ...newSkills[index], title: e.target.value };
-                            updateField('skills', newSkills);
-                          }} placeholder="e.g. Languages / Tools" />
-                          <FormItem label="Skills (Comma Separated)" value={skill.items ? (Array.isArray(skill.items) ? skill.items.join(', ') : skill.items) : (skill.level || '')} onChange={(e) => {
-                            const newSkills = [...formData.skills];
-                            newSkills[index] = { ...newSkills[index], items: e.target.value.split(',').map(s => s.trim()).filter(Boolean), level: e.target.value };
-                            updateField('skills', newSkills);
-                          }} placeholder="e.g. Java, Rust, Golang" />
-                        </div>
-                      </div>
-                    ))}
-                  </SectionCard>
-                );
-              }
+                let cardElement = null;
 
-              if (sectionKey === 'experience') {
-                return (
-                  <SectionCard 
-                    key="experience"
-                    icon="work" 
-                    title={displayTitle} 
-                    subtitle="Professional History" 
-                    buttonText="Add Work Experience" 
-                    onAdd={addExperience}
-                    value="experience"
-                    isExpanded={activeAccordionSections.includes('experience')}
-                    dragHandleProps={{}}
-                    onTitleDoubleClick={() => {
-                      setEditingSectionKey('experience');
-                      setEditingTitleValue(displayTitle);
-                    }}
-                    isEditingTitle={isEditing}
-                    editingTitleValue={editingTitleValue}
-                    onTitleChange={(e) => setEditingTitleValue(e.target.value)}
-                    onTitleBlur={() => submitRename('experience')}
-                    onTitleKeyDown={(e) => e.key === 'Enter' && submitRename('experience')}
-                    headerAction={reorderAction}
-                  >
-                    {formData.experience.map((exp, index) => (
-                      <div key={index} className="relative border border-slate-200/60 rounded-2xl pl-5 pr-5 py-5 mb-6 group bg-white transition-all hover:border-teal-500/40 shadow-sm">
-                        <button 
-                          onClick={() => removeExperience(index)} 
-                          className="absolute top-4 right-4 w-8 h-8 rounded-xl bg-slate-100 hover:bg-rose-50 border border-transparent hover:border-rose-100 text-slate-500 hover:text-rose-500 flex items-center justify-center transition-all cursor-pointer"
-                        >
-                          <span className="material-symbols-outlined text-[18px]">delete</span>
-                        </button>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                          <FormItem label="Job Title" value={exp.jobTitle} onChange={(e) => {
-                            const newExp = [...formData.experience]; newExp[index] = { ...newExp[index], jobTitle: e.target.value }; updateField('experience', newExp);
-                          }} placeholder="e.g. Senior Software Engineer" />
-                          <FormItem label="Company" value={exp.company} onChange={(e) => {
-                            const newExp = [...formData.experience]; newExp[index] = { ...newExp[index], company: e.target.value }; updateField('experience', newExp);
-                          }} placeholder="e.g. Acme Corp" />
-                          <FormItem label="Location" value={exp.location} onChange={(e) => {
-                            const newExp = [...formData.experience]; newExp[index] = { ...newExp[index], location: e.target.value }; updateField('experience', newExp);
-                          }} placeholder="e.g. San Francisco, CA" />
-                          <FormItem label="Duration" value={exp.duration} onChange={(e) => {
-                            const newExp = [...formData.experience]; newExp[index] = { ...newExp[index], duration: e.target.value }; updateField('experience', newExp);
-                          }} placeholder="e.g. 2022 - Present" />
-                        </div>
-                        <FormItem label="Description" type="textarea" value={exp.responsibility} onChange={(e) => {
-                          const newExp = [...formData.experience]; newExp[index] = { ...newExp[index], responsibility: e.target.value }; updateField('experience', newExp);
-                        }} placeholder="Describe your achievements and impact..." colspan={2} />
-                      </div>
-                    ))}
-                  </SectionCard>
-                );
-              }
-
-              if (sectionKey === 'education') {
-                return (
-                  <SectionCard 
-                    key="education"
-                    icon="school" 
-                    title={displayTitle} 
-                    subtitle="Academic Background" 
-                    buttonText="Add Education" 
-                    onAdd={addEducation}
-                    value="education"
-                    isExpanded={activeAccordionSections.includes('education')}
-                    dragHandleProps={{}}
-                    onTitleDoubleClick={() => {
-                      setEditingSectionKey('education');
-                      setEditingTitleValue(displayTitle);
-                    }}
-                    isEditingTitle={isEditing}
-                    editingTitleValue={editingTitleValue}
-                    onTitleChange={(e) => setEditingTitleValue(e.target.value)}
-                    onTitleBlur={() => submitRename('education')}
-                    onTitleKeyDown={(e) => e.key === 'Enter' && submitRename('education')}
-                    headerAction={reorderAction}
-                  >
-                    {formData.education.map((edu, index) => (
-                      <div key={index} className="relative border-l-2 border-teal-500/20 pl-5 py-2 mb-6 group transition-all hover:border-teal-500">
-                        <button 
-                          onClick={() => removeEducation(index)} 
-                          className="absolute top-4 right-4 w-8 h-8 rounded-xl bg-slate-100 hover:bg-rose-50 border border-transparent hover:border-rose-100 text-slate-500 hover:text-rose-500 flex items-center justify-center transition-all cursor-pointer"
-                        >
-                          <span className="material-symbols-outlined text-[18px]">delete</span>
-                        </button>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <FormItem label="Degree" value={edu.degree} onChange={(e) => {
-                            const newEdu = [...formData.education]; newEdu[index] = { ...newEdu[index], degree: e.target.value }; updateField('education', newEdu);
-                          }} placeholder="e.g. B.S. in Computer Science" />
-                          <FormItem label="School / University" value={edu.university} onChange={(e) => {
-                            const newEdu = [...formData.education]; newEdu[index] = { ...newEdu[index], university: e.target.value }; updateField('education', newEdu);
-                          }} placeholder="e.g. Stanford University" />
-                          <FormItem label="Location" value={edu.location} onChange={(e) => {
-                            const newEdu = [...formData.education]; newEdu[index] = { ...newEdu[index], location: e.target.value }; updateField('education', newEdu);
-                          }} placeholder="e.g. Stanford, CA" />
-                          <FormItem label="Graduation Year" value={edu.graduationYear} onChange={(e) => {
-                            const newEdu = [...formData.education]; newEdu[index] = { ...newEdu[index], graduationYear: e.target.value }; updateField('education', newEdu);
-                          }} placeholder="e.g. 2021" />
-                        </div>
-                      </div>
-                    ))}
-                  </SectionCard>
-                );
-              }
-
-              if (sectionKey === 'projects') {
-                return (
-                  <SectionCard 
-                    key="projects"
-                    icon="terminal" 
-                    title={displayTitle} 
-                    subtitle="Technical Portfolio" 
-                    buttonText="Add Project" 
-                    onAdd={addProject}
-                    value="projects"
-                    isExpanded={activeAccordionSections.includes('projects')}
-                    dragHandleProps={{}}
-                    onTitleDoubleClick={() => {
-                      setEditingSectionKey('projects');
-                      setEditingTitleValue(displayTitle);
-                    }}
-                    isEditingTitle={isEditing}
-                    editingTitleValue={editingTitleValue}
-                    onTitleChange={(e) => setEditingTitleValue(e.target.value)}
-                    onTitleBlur={() => submitRename('projects')}
-                    onTitleKeyDown={(e) => e.key === 'Enter' && submitRename('projects')}
-                    headerAction={reorderAction}
-                  >
-                    {formData.projects.map((project, index) => (
-                      <div key={index} className="relative border border-slate-200/60 rounded-2xl pl-5 pr-5 py-5 mb-6 group bg-white transition-all hover:border-teal-500/40 shadow-sm">
-                        <button 
-                          onClick={() => removeProject(index)} 
-                          className="absolute top-4 right-4 w-8 h-8 rounded-xl bg-slate-100 hover:bg-rose-50 border border-transparent hover:border-rose-100 text-slate-500 hover:text-rose-500 flex items-center justify-center transition-all cursor-pointer"
-                        >
-                          <span className="material-symbols-outlined text-[18px]">delete</span>
-                        </button>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                          <FormItem label="Project Title" value={project.title} onChange={(e) => {
-                            const newProjects = [...formData.projects]; newProjects[index] = { ...newProjects[index], title: e.target.value }; updateField('projects', newProjects);
-                          }} placeholder="e.g. Cloud Resume Platform" />
-                          <FormItem label="Technologies Used" value={project.technologiesUsed} onChange={(e) => {
-                            const newProjects = [...formData.projects]; newProjects[index] = { ...newProjects[index], technologiesUsed: e.target.value }; updateField('projects', newProjects);
-                          }} placeholder="e.g. React, Node.js, Spring Boot" />
-                        </div>
-                        <FormItem label="Description" type="textarea" value={project.description} onChange={(e) => {
-                          const newProjects = [...formData.projects]; newProjects[index] = { ...newProjects[index], description: e.target.value }; updateField('projects', newProjects);
-                        }} placeholder="Detail build specs and outcomes..." colspan={2} />
-                      </div>
-                    ))}
-                  </SectionCard>
-                );
-              }
-
-              if (sectionKey === 'certifications') {
-                return (
-                  <SectionCard 
-                    key="certifications"
-                    icon="workspace_premium" 
-                    title={displayTitle} 
-                    subtitle="Professional Credentials" 
-                    buttonText="Add Certification" 
-                    onAdd={addCertification}
-                    value="certifications"
-                    isExpanded={activeAccordionSections.includes('certifications')}
-                    dragHandleProps={{}}
-                    onTitleDoubleClick={() => {
-                      setEditingSectionKey('certifications');
-                      setEditingTitleValue(displayTitle);
-                    }}
-                    isEditingTitle={isEditing}
-                    editingTitleValue={editingTitleValue}
-                    onTitleChange={(e) => setEditingTitleValue(e.target.value)}
-                    onTitleBlur={() => submitRename('certifications')}
-                    onTitleKeyDown={(e) => e.key === 'Enter' && submitRename('certifications')}
-                    headerAction={reorderAction}
-                  >
-                    {/* Certifications Sub-Section */}
-                    <div className="mb-6">
-                      <div className="flex justify-between items-center mb-4 pb-1.5 border-b border-slate-200/50">
-                        <h4 className="text-[11px] font-bold uppercase tracking-wider" style={{ color: '#3D5751' }}>Certifications</h4>
-                        <button 
-                          onClick={addCertification}
-                          className="px-2.5 py-1 text-[10px] font-bold text-teal-600 hover:text-teal-800 bg-teal-50 hover:bg-teal-100/50 border border-teal-200/40 rounded-lg flex items-center gap-1 transition-all cursor-pointer shadow-sm"
-                        >
-                          <span className="material-symbols-outlined text-[12px]">add</span> Add Cert
-                        </button>
-                      </div>
-                      
-                      {formData.certifications.length === 0 ? (
-                        <p className="text-[11px] text-slate-400 italic">No certifications added yet.</p>
-                      ) : (
-                        formData.certifications.map((cert, index) => (
-                          <div key={index} className="relative border-l-2 border-teal-500/20 pl-5 py-2 mb-4 group transition-all hover:border-teal-500">
-                            <button 
-                              onClick={() => removeCertification(index)} 
-                              className="absolute top-4 right-4 w-8 h-8 rounded-xl bg-slate-100 hover:bg-rose-50 border border-transparent hover:border-rose-100 text-slate-500 hover:text-rose-500 flex items-center justify-center transition-all cursor-pointer"
-                            >
-                              <span className="material-symbols-outlined text-[18px]">delete</span>
-                            </button>
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                              <span className="col-span-1 sm:col-span-3">
-                                <FormItem label="Certification Title" value={cert.title} onChange={(e) => {
-                                  const newCerts = [...formData.certifications]; newCerts[index] = { ...newCerts[index], title: e.target.value }; updateField('certifications', newCerts);
-                                }} placeholder="e.g. AWS Certified Cloud Practitioner" />
-                              </span>
-                              <span className="col-span-2">
-                                <FormItem label="Issuing Organization" value={cert.issuingOrganization} onChange={(e) => {
-                                  const newCerts = [...formData.certifications]; newCerts[index] = { ...newCerts[index], issuingOrganization: e.target.value }; updateField('certifications', newCerts);
-                                }} placeholder="e.g. Amazon Web Services" />
-                              </span>
-                              <FormItem label="Year" value={cert.year} onChange={(e) => {
-                                  const newCerts = [...formData.certifications]; newCerts[index] = { ...newCerts[index], year: e.target.value }; updateField('certifications', newCerts);
-                                }} placeholder="e.g. 2023" />
-                            </div>
+                // Render corresponding cards depending on target sectionKey
+                if (sectionKey === 'summary') {
+                  cardElement = (
+                    <SectionCard 
+                      icon="history_edu" 
+                      title={displayTitle} 
+                      subtitle="Executive Abstract"
+                      value="summary"
+                      isExpanded={activeAccordionSections.includes('summary')}
+                      onTitleDoubleClick={() => {
+                        setEditingSectionKey('summary');
+                        setEditingTitleValue(displayTitle);
+                      }}
+                      isEditingTitle={isEditing}
+                      editingTitleValue={editingTitleValue}
+                      onTitleChange={(e) => setEditingTitleValue(e.target.value)}
+                      onTitleBlur={() => submitRename('summary')}
+                      onTitleKeyDown={(e) => e.key === 'Enter' && submitRename('summary')}
+                      headerAction={reorderAction}
+                    >
+                      <FormItem label="Executive Summary" value={formData.summary} onChange={(e) => updateField('summary', e.target.value)} type="textarea" placeholder="Detail your career objectives, core strengths, and what sets you apart..." />
+                    </SectionCard>
+                  );
+                } else if (sectionKey === 'skills') {
+                  cardElement = (
+                    <SectionCard 
+                      icon="code" 
+                      title={displayTitle} 
+                      subtitle="Core Competencies" 
+                      buttonText="Add Skill Category" 
+                      onAdd={addSkill}
+                      value="skills"
+                      isExpanded={activeAccordionSections.includes('skills')}
+                      onTitleDoubleClick={() => {
+                        setEditingSectionKey('skills');
+                        setEditingTitleValue(displayTitle);
+                      }}
+                      isEditingTitle={isEditing}
+                      editingTitleValue={editingTitleValue}
+                      onTitleChange={(e) => setEditingTitleValue(e.target.value)}
+                      onTitleBlur={() => submitRename('skills')}
+                      onTitleKeyDown={(e) => e.key === 'Enter' && submitRename('skills')}
+                      headerAction={reorderAction}
+                    >
+                      {formData.skills.map((skill, index) => (
+                        <div key={index} className="relative border-l-2 border-teal-500/20 pl-5 py-2 mb-6 group transition-all hover:border-teal-500">
+                          <button 
+                            onClick={() => removeSkill(index)} 
+                            className="absolute top-4 right-4 w-8 h-8 rounded-xl bg-slate-100 hover:bg-rose-50 border border-transparent hover:border-rose-100 text-slate-500 hover:text-rose-500 flex items-center justify-center transition-all cursor-pointer"
+                          >
+                            <span className="material-symbols-outlined text-[18px]">delete</span>
+                          </button>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <FormItem label="Category Name" value={skill.title} onChange={(e) => {
+                              const newSkills = [...formData.skills];
+                              newSkills[index] = { ...newSkills[index], title: e.target.value };
+                              updateField('skills', newSkills);
+                            }} placeholder="e.g. Languages / Tools" />
+                            <FormItem label="Skills (Comma Separated)" value={skill.items ? (Array.isArray(skill.items) ? skill.items.join(', ') : skill.items) : (skill.level || '')} onChange={(e) => {
+                              const newSkills = [...formData.skills];
+                              newSkills[index] = { ...newSkills[index], items: e.target.value.split(',').map(s => s.trim()).filter(Boolean), level: e.target.value };
+                              updateField('skills', newSkills);
+                            }} placeholder="e.g. Java, Rust, Golang" />
                           </div>
-                        ))
-                      )}
-                    </div>
-
-                    {/* Achievements Sub-Section */}
-                    <div>
-                      <div className="flex justify-between items-center mb-4 pb-1.5 border-b border-slate-200/50">
-                        <h4 className="text-[11px] font-bold uppercase tracking-wider text-teal-700">Achievements</h4>
-                        <button 
-                          onClick={() => {
-                            setFormData(prev => ({ ...prev, achievements: [...prev.achievements, { title: '', year: '' }] }));
-                            handleFieldChange();
-                          }}
-                          className="px-2.5 py-1 text-[10px] font-bold text-teal-600 hover:text-teal-800 bg-teal-50 hover:bg-teal-100/50 border border-teal-200/40 rounded-lg flex items-center gap-1 transition-all cursor-pointer shadow-sm"
-                        >
-                          <span className="material-symbols-outlined text-[12px]">add</span> Add Achievement
-                        </button>
-                      </div>
-                      
-                      {formData.achievements.length === 0 ? (
-                        <p className="text-[11px] text-slate-400 italic">No achievements added yet.</p>
-                      ) : (
-                        formData.achievements.map((ach, index) => (
-                          <div key={index} className="relative border-l-2 border-teal-500/20 pl-5 py-2 mb-4 group transition-all hover:border-teal-500">
-                            <button 
-                              onClick={() => {
-                                setFormData(prev => ({ ...prev, achievements: prev.achievements.filter((_, i) => i !== index) }));
-                                handleFieldChange();
-                              }} 
-                              className="absolute top-4 right-4 w-8 h-8 rounded-xl bg-slate-100 hover:bg-rose-50 border border-transparent hover:border-rose-100 text-slate-500 hover:text-rose-500 flex items-center justify-center transition-all cursor-pointer"
-                            >
-                              <span className="material-symbols-outlined text-[18px]">delete</span>
-                            </button>
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                              <span className="col-span-2">
-                                <FormItem label="Achievement Title" value={ach.title} onChange={(e) => {
-                                  const newAchs = [...formData.achievements]; newAchs[index] = { ...newAchs[index], title: e.target.value }; updateField('achievements', newAchs);
-                                }} placeholder="e.g. Won 1st place in National Hackathon" />
-                              </span>
-                              <FormItem label="Year" value={ach.year} onChange={(e) => {
-                                const newAchs = [...formData.achievements]; newAchs[index] = { ...newAchs[index], year: e.target.value }; updateField('achievements', newAchs);
-                              }} placeholder="e.g. 2024" />
-                            </div>
+                        </div>
+                      ))}
+                    </SectionCard>
+                  );
+                } else if (sectionKey === 'experience') {
+                  cardElement = (
+                    <SectionCard 
+                      icon="work" 
+                      title={displayTitle} 
+                      subtitle="Professional History" 
+                      buttonText="Add Work Experience" 
+                      onAdd={addExperience}
+                      value="experience"
+                      isExpanded={activeAccordionSections.includes('experience')}
+                      onTitleDoubleClick={() => {
+                        setEditingSectionKey('experience');
+                        setEditingTitleValue(displayTitle);
+                      }}
+                      isEditingTitle={isEditing}
+                      editingTitleValue={editingTitleValue}
+                      onTitleChange={(e) => setEditingTitleValue(e.target.value)}
+                      onTitleBlur={() => submitRename('experience')}
+                      onTitleKeyDown={(e) => e.key === 'Enter' && submitRename('experience')}
+                      headerAction={reorderAction}
+                    >
+                      {formData.experience.map((exp, index) => (
+                        <div key={index} className="relative border border-slate-200/60 rounded-2xl pl-5 pr-5 py-5 mb-6 group bg-white transition-all hover:border-teal-500/40 shadow-sm">
+                          <button 
+                            onClick={() => removeExperience(index)} 
+                            className="absolute top-4 right-4 w-8 h-8 rounded-xl bg-slate-100 hover:bg-rose-50 border border-transparent hover:border-rose-100 text-slate-500 hover:text-rose-500 flex items-center justify-center transition-all cursor-pointer"
+                          >
+                            <span className="material-symbols-outlined text-[18px]">delete</span>
+                          </button>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                            <FormItem label="Job Title" value={exp.jobTitle} onChange={(e) => {
+                              const newExp = [...formData.experience]; newExp[index] = { ...newExp[index], jobTitle: e.target.value }; updateField('experience', newExp);
+                            }} placeholder="e.g. Senior Software Engineer" />
+                            <FormItem label="Company" value={exp.company} onChange={(e) => {
+                              const newExp = [...formData.experience]; newExp[index] = { ...newExp[index], company: e.target.value }; updateField('experience', newExp);
+                            }} placeholder="e.g. Acme Corp" />
+                            <FormItem label="Location" value={exp.location} onChange={(e) => {
+                              const newExp = [...formData.experience]; newExp[index] = { ...newExp[index], location: e.target.value }; updateField('experience', newExp);
+                            }} placeholder="e.g. San Francisco, CA" />
+                            <FormItem label="Duration" value={exp.duration} onChange={(e) => {
+                              const newExp = [...formData.experience]; newExp[index] = { ...newExp[index], duration: e.target.value }; updateField('experience', newExp);
+                            }} placeholder="e.g. 2022 - Present" />
                           </div>
-                        ))
-                      )}
-                    </div>
-                  </SectionCard>
-                );
-              }
+                          <FormItem label="Description" type="textarea" value={exp.responsibility} onChange={(e) => {
+                            const newExp = [...formData.experience]; newExp[index] = { ...newExp[index], responsibility: e.target.value }; updateField('experience', newExp);
+                          }} placeholder="Describe your achievements and impact..." colspan={2} />
+                        </div>
+                      ))}
+                    </SectionCard>
+                  );
+                } else if (sectionKey === 'education') {
+                  cardElement = (
+                    <SectionCard 
+                      icon="school" 
+                      title={displayTitle} 
+                      subtitle="Academic Background" 
+                      buttonText="Add Education" 
+                      onAdd={addEducation}
+                      value="education"
+                      isExpanded={activeAccordionSections.includes('education')}
+                      onTitleDoubleClick={() => {
+                        setEditingSectionKey('education');
+                        setEditingTitleValue(displayTitle);
+                      }}
+                      isEditingTitle={isEditing}
+                      editingTitleValue={editingTitleValue}
+                      onTitleChange={(e) => setEditingTitleValue(e.target.value)}
+                      onTitleBlur={() => submitRename('education')}
+                      onTitleKeyDown={(e) => e.key === 'Enter' && submitRename('education')}
+                      headerAction={reorderAction}
+                    >
+                      {formData.education.map((edu, index) => (
+                        <div key={index} className="relative border-l-2 border-teal-500/20 pl-5 py-2 mb-6 group transition-all hover:border-teal-500">
+                          <button 
+                            onClick={() => removeEducation(index)} 
+                            className="absolute top-4 right-4 w-8 h-8 rounded-xl bg-slate-100 hover:bg-rose-50 border border-transparent hover:border-rose-100 text-slate-500 hover:text-rose-500 flex items-center justify-center transition-all cursor-pointer"
+                          >
+                            <span className="material-symbols-outlined text-[18px]">delete</span>
+                          </button>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <FormItem label="Degree" value={edu.degree} onChange={(e) => {
+                              const newEdu = [...formData.education]; newEdu[index] = { ...newEdu[index], degree: e.target.value }; updateField('education', newEdu);
+                            }} placeholder="e.g. B.S. in Computer Science" />
+                            <FormItem label="School / University" value={edu.university} onChange={(e) => {
+                              const newEdu = [...formData.education]; newEdu[index] = { ...newEdu[index], university: e.target.value }; updateField('education', newEdu);
+                            }} placeholder="e.g. Stanford University" />
+                            <FormItem label="Location" value={edu.location} onChange={(e) => {
+                              const newEdu = [...formData.education]; newEdu[index] = { ...newEdu[index], location: e.target.value }; updateField('education', newEdu);
+                            }} placeholder="e.g. Stanford, CA" />
+                            <FormItem label="Graduation Year" value={edu.graduationYear} onChange={(e) => {
+                              const newEdu = [...formData.education]; newEdu[index] = { ...newEdu[index], graduationYear: e.target.value }; updateField('education', newEdu);
+                            }} placeholder="e.g. 2021" />
+                          </div>
+                        </div>
+                      ))}
+                    </SectionCard>
+                  );
+                } else if (sectionKey === 'projects') {
+                  cardElement = (
+                    <SectionCard 
+                      icon="terminal" 
+                      title={displayTitle} 
+                      subtitle="Technical Portfolio" 
+                      buttonText="Add Project" 
+                      onAdd={addProject}
+                      value="projects"
+                      isExpanded={activeAccordionSections.includes('projects')}
+                      onTitleDoubleClick={() => {
+                        setEditingSectionKey('projects');
+                        setEditingTitleValue(displayTitle);
+                      }}
+                      isEditingTitle={isEditing}
+                      editingTitleValue={editingTitleValue}
+                      onTitleChange={(e) => setEditingTitleValue(e.target.value)}
+                      onTitleBlur={() => submitRename('projects')}
+                      onTitleKeyDown={(e) => e.key === 'Enter' && submitRename('projects')}
+                      headerAction={reorderAction}
+                    >
+                      {formData.projects.map((project, index) => (
+                        <div key={index} className="relative border border-slate-200/60 rounded-2xl pl-5 pr-5 py-5 mb-6 group bg-white transition-all hover:border-teal-500/40 shadow-sm">
+                          <button 
+                            onClick={() => removeProject(index)} 
+                            className="absolute top-4 right-4 w-8 h-8 rounded-xl bg-slate-100 hover:bg-rose-50 border border-transparent hover:border-rose-100 text-slate-500 hover:text-rose-500 flex items-center justify-center transition-all cursor-pointer"
+                          >
+                            <span className="material-symbols-outlined text-[18px]">delete</span>
+                          </button>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                            <FormItem label="Project Title" value={project.title} onChange={(e) => {
+                              const newProjects = [...formData.projects]; newProjects[index] = { ...newProjects[index], title: e.target.value }; updateField('projects', newProjects);
+                            }} placeholder="e.g. Cloud Resume Platform" />
+                            <FormItem label="Technologies Used" value={project.technologiesUsed} onChange={(e) => {
+                              const newProjects = [...formData.projects]; newProjects[index] = { ...newProjects[index], technologiesUsed: e.target.value }; updateField('projects', newProjects);
+                            }} placeholder="e.g. React, Node.js, Spring Boot" />
+                          </div>
+                          <FormItem label="Description" type="textarea" value={project.description} onChange={(e) => {
+                            const newProjects = [...formData.projects]; newProjects[index] = { ...newProjects[index], description: e.target.value }; updateField('projects', newProjects);
+                          }} placeholder="Detail build specs and outcomes..." colspan={2} />
+                        </div>
+                      ))}
+                    </SectionCard>
+                  );
+                } else if (sectionKey === 'certifications') {
+                  cardElement = (
+                    <SectionCard 
+                      icon="workspace_premium" 
+                      title={displayTitle} 
+                      subtitle="Professional Credentials" 
+                      buttonText="Add Certification" 
+                      onAdd={addCertification}
+                      value="certifications"
+                      isExpanded={activeAccordionSections.includes('certifications')}
+                      onTitleDoubleClick={() => {
+                        setEditingSectionKey('certifications');
+                        setEditingTitleValue(displayTitle);
+                      }}
+                      isEditingTitle={isEditing}
+                      editingTitleValue={editingTitleValue}
+                      onTitleChange={(e) => setEditingTitleValue(e.target.value)}
+                      onTitleBlur={() => submitRename('certifications')}
+                      onTitleKeyDown={(e) => e.key === 'Enter' && submitRename('certifications')}
+                      headerAction={reorderAction}
+                    >
+                      {/* Certifications Sub-Section */}
+                      <div className="mb-6">
+                        <div className="flex justify-between items-center mb-4 pb-1.5 border-b border-slate-200/50">
+                          <h4 className="text-[11px] font-bold uppercase tracking-wider" style={{ color: '#3D5751' }}>Certifications</h4>
+                          <button 
+                            onClick={addCertification}
+                            className="px-2.5 py-1 text-[10px] font-bold text-teal-600 hover:text-teal-800 bg-teal-50 hover:bg-teal-100/50 border border-teal-200/40 rounded-lg flex items-center gap-1 transition-all cursor-pointer shadow-sm"
+                          >
+                            <span className="material-symbols-outlined text-[12px]">add</span> Add Cert
+                          </button>
+                        </div>
+                        
+                        {formData.certifications.length === 0 ? (
+                          <p className="text-[11px] text-slate-400 italic">No certifications added yet.</p>
+                        ) : (
+                          formData.certifications.map((cert, index) => (
+                            <div key={index} className="relative border-l-2 border-teal-500/20 pl-5 py-2 mb-4 group transition-all hover:border-teal-500">
+                              <button 
+                                onClick={() => removeCertification(index)} 
+                                className="absolute top-4 right-4 w-8 h-8 rounded-xl bg-slate-100 hover:bg-rose-50 border border-transparent hover:border-rose-100 text-slate-500 hover:text-rose-500 flex items-center justify-center transition-all cursor-pointer"
+                              >
+                                <span className="material-symbols-outlined text-[18px]">delete</span>
+                              </button>
+                              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <span className="col-span-1 sm:col-span-3">
+                                  <FormItem label="Certification Title" value={cert.title} onChange={(e) => {
+                                    const newCerts = [...formData.certifications]; newCerts[index] = { ...newCerts[index], title: e.target.value }; updateField('certifications', newCerts);
+                                  }} placeholder="e.g. AWS Certified Cloud Practitioner" />
+                                </span>
+                                <span className="col-span-2">
+                                  <FormItem label="Issuing Organization" value={cert.issuingOrganization} onChange={(e) => {
+                                    const newCerts = [...formData.certifications]; newCerts[index] = { ...newCerts[index], issuingOrganization: e.target.value }; updateField('certifications', newCerts);
+                                  }} placeholder="e.g. Amazon Web Services" />
+                                </span>
+                                <FormItem label="Year" value={cert.year} onChange={(e) => {
+                                    const newCerts = [...formData.certifications]; newCerts[index] = { ...newCerts[index], year: e.target.value }; updateField('certifications', newCerts);
+                                  }} placeholder="e.g. 2023" />
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </div>
 
-              return null;
-            })}
+                      {/* Achievements Sub-Section */}
+                      <div>
+                        <div className="flex justify-between items-center mb-4 pb-1.5 border-b border-slate-200/50">
+                          <h4 className="text-[11px] font-bold uppercase tracking-wider text-teal-700">Achievements</h4>
+                          <button 
+                            onClick={() => {
+                              setFormData(prev => ({ ...prev, achievements: [...prev.achievements, { title: '', year: '' }] }));
+                              handleFieldChange();
+                            }}
+                            className="px-2.5 py-1 text-[10px] font-bold text-teal-600 hover:text-teal-800 bg-teal-50 hover:bg-teal-100/50 border border-teal-200/40 rounded-lg flex items-center gap-1 transition-all cursor-pointer shadow-sm"
+                          >
+                            <span className="material-symbols-outlined text-[12px]">add</span> Add Achievement
+                          </button>
+                        </div>
+                        
+                        {formData.achievements.length === 0 ? (
+                          <p className="text-[11px] text-slate-400 italic">No achievements added yet.</p>
+                        ) : (
+                          formData.achievements.map((ach, index) => (
+                            <div key={index} className="relative border-l-2 border-teal-500/20 pl-5 py-2 mb-4 group transition-all hover:border-teal-500">
+                              <button 
+                                onClick={() => {
+                                  setFormData(prev => ({ ...prev, achievements: prev.achievements.filter((_, i) => i !== index) }));
+                                  handleFieldChange();
+                                }} 
+                                className="absolute top-4 right-4 w-8 h-8 rounded-xl bg-slate-100 hover:bg-rose-50 border border-transparent hover:border-rose-100 text-slate-500 hover:text-rose-500 flex items-center justify-center transition-all cursor-pointer"
+                              >
+                                <span className="material-symbols-outlined text-[18px]">delete</span>
+                              </button>
+                              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <span className="col-span-2">
+                                  <FormItem label="Achievement Title" value={ach.title} onChange={(e) => {
+                                    const newAchs = [...formData.achievements]; newAchs[index] = { ...newAchs[index], title: e.target.value }; updateField('achievements', newAchs);
+                                  }} placeholder="e.g. Won 1st place in National Hackathon" />
+                                </span>
+                                <FormItem label="Year" value={ach.year} onChange={(e) => {
+                                  const newAchs = [...formData.achievements]; newAchs[index] = { ...newAchs[index], year: e.target.value }; updateField('achievements', newAchs);
+                                }} placeholder="e.g. 2024" />
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </SectionCard>
+                  );
+                }
+
+                if (!cardElement) return null;
+
+                return (
+                  <ReorderableSectionItem key={sectionKey} sectionKey={sectionKey}>
+                    {cardElement}
+                  </ReorderableSectionItem>
+                );
+              })}
+            </Reorder.Group>
 
             {/* 3. Add Removed Section menu triggers at the end of the scroll */}
             {sectionConfig.hidden.length > 0 && (

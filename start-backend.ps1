@@ -7,9 +7,21 @@ if ($processId) {
     Start-Sleep -Seconds 2
 }
 
-# Set environment variables (use your own values or set them in your environment)
-# IMPORTANT: Do NOT commit real secrets to version control.
-# Set these in your system environment or create a .env file that is gitignored.
+# Load environment variables from .env if present
+$envFile = Join-Path (Get-Location) ".env"
+if (Test-Path $envFile) {
+    Write-Host "Loading environment variables from .env file..." -ForegroundColor Cyan
+    Get-Content $envFile | ForEach-Object {
+        $line = $_.Trim()
+        if ($line -and -not $line.StartsWith("#") -and $line.Contains("=")) {
+            $key, $value = $line.Split("=", 2)
+            $key = $key.Trim()
+            $value = $value.Trim()
+            [System.Environment]::SetEnvironmentVariable($key, $value)
+        }
+    }
+}
+
 if (-not $env:GEMINI_API_KEY) { Write-Host "WARNING: GEMINI_API_KEY not set. Set it in your environment." -ForegroundColor Yellow }
 if (-not $env:GOOGLE_CLIENT_ID) { Write-Host "WARNING: GOOGLE_CLIENT_ID not set. Set it in your environment." -ForegroundColor Yellow }
 if (-not $env:GOOGLE_CLIENT_SECRET) { Write-Host "WARNING: GOOGLE_CLIENT_SECRET not set. Set it in your environment." -ForegroundColor Yellow }

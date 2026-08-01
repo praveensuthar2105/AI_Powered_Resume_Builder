@@ -165,11 +165,63 @@ const CreatePrompt = () => {
           </div>
 
           {error && (
-            <div className="mt-4 p-4 rounded-2xl bg-rose-50 border border-rose-100 text-rose-800 text-xs text-left flex items-start gap-2.5 font-sans leading-relaxed">
-              <span className="material-symbols-outlined text-[16px] text-rose-500 mt-0.5 flex-shrink-0">error</span>
-              <div>
-                <span className="font-bold block mb-0.5">Generation Failed</span>
-                {error}
+            <div className="mt-4 p-4 rounded-2xl bg-rose-50 border border-rose-100 text-rose-800 text-xs text-left font-sans leading-relaxed">
+              <div className="flex items-start gap-2.5">
+                <span className="material-symbols-outlined text-[18px] text-rose-500 mt-0.5 flex-shrink-0">error</span>
+                <div className="flex-1">
+                  <span className="font-bold text-sm block mb-1 text-rose-900">Generation Failed: Gemini API Key Not Configured</span>
+                  <p className="mb-2 text-rose-700">
+                    The backend AI service requires a Google Gemini API Key. Please add <code className="bg-rose-100 px-1.5 py-0.5 rounded font-mono font-bold">GEMINI_API_KEY=your_key</code> to your backend <code className="bg-rose-100 px-1.5 py-0.5 rounded font-mono font-bold">.env</code> file or hosting environment variables, then restart the backend server.
+                  </p>
+                  
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const demoResume = {
+                          data: {
+                            personalInformation: {
+                              fullName: 'Alex Morgan',
+                              email: 'alex.morgan@example.com',
+                              phoneNumber: '+1 (555) 234-5678',
+                              location: 'San Francisco, CA',
+                              linkedIn: 'linkedin.com/in/alexmorgan-dev',
+                              gitHub: 'github.com/alexmorgan-dev'
+                            },
+                            summary: 'Results-driven Senior Full Stack Engineer with 6+ years of experience designing scalable web applications and AI-powered interfaces.',
+                            skills: [
+                              { title: 'Frontend', level: 'Advanced', items: ['React', 'TypeScript', 'TailwindCSS'] },
+                              { title: 'Backend', level: 'Advanced', items: ['Java', 'Spring Boot', 'Node.js', 'MySQL'] }
+                            ],
+                            experience: [
+                              {
+                                company: 'TechCorp Solutions',
+                                jobTitle: 'Senior Full Stack Engineer',
+                                location: 'San Francisco, CA',
+                                duration: '2022 - Present',
+                                responsibility: 'Architected high-performance web applications, reduced bundle load by 60%, and mentored junior engineers.'
+                              }
+                            ],
+                            education: [
+                              {
+                                university: 'Stanford University',
+                                degree: 'B.S. in Computer Science',
+                                location: 'Stanford, CA',
+                                graduationYear: '2020'
+                              }
+                            ]
+                          },
+                          selectedTemplate: 'ats'
+                        };
+                        localStorage.setItem('generatedResume', JSON.stringify(demoResume));
+                        navigate('/edit-resume', { state: { triggerFeedback: true } });
+                      }}
+                      className="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs border-none cursor-pointer transition-colors"
+                    >
+                      Continue with Demo Sample Resume →
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           )}

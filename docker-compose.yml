@@ -56,6 +56,7 @@ services:
       - DB_USERNAME=${DB_USERNAME}
       - DB_PASSWORD=${DB_PASSWORD}
       - JWT_SECRET=${JWT_SECRET}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
       - RABBITMQ_HOST=rabbitmq
       - RABBITMQ_PORT=5672
       - EUREKA_URI=http://discovery-server:8761/eureka/
