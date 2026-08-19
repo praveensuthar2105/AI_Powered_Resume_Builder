@@ -27,6 +27,9 @@ public class AtsAsyncController {
     private final AtsScoreProducer atsScoreProducer;
     private final AtsScoreResultListener resultListener;
 
+    @org.springframework.beans.factory.annotation.Value("${intelligence.service.url:${INTELLIGENCE_SERVICE_URL:}}")
+    private String intelligenceServiceUrl;
+
     public AtsAsyncController(AtsScoreProducer atsScoreProducer,
                                AtsScoreResultListener resultListener) {
         this.atsScoreProducer = atsScoreProducer;
@@ -78,64 +81,61 @@ public class AtsAsyncController {
             try {
                 atsScoreProducer.requestAtsScore(event);
                 rabbitSuccess = true;
+                log.info("AtsScoreEvent published to RabbitMQ successfully for jobId={}", jobId);
             } catch (Exception e) {
                 log.warn("RabbitMQ publish failed for jobId={}. Error: {}", jobId, e.getMessage());
             }
 
-            // 2. Always launch background worker thread to guarantee completion
+            // 2. Background fallback worker (only if RabbitMQ failed or as a late safety net if URL configured)
             final byte[] fileBytes = file.getBytes();
             final String fileName = file.getOriginalFilename();
             final String jd = jobDescription;
             final String finalEmail = userEmail;
             final boolean wasRabbitPublished = rabbitSuccess;
+            final String targetUrl = (intelligenceServiceUrl != null && !intelligenceServiceUrl.trim().isEmpty())
+                    ? intelligenceServiceUrl.trim()
+                    : (wasRabbitPublished ? null : "http://localhost:8083");
 
-            new Thread(() -> {
-                try {
-                    // Small delay if RabbitMQ was published to give RabbitMQ first priority
-                    if (wasRabbitPublished) {
-                        Thread.sleep(8000);
-                        if (resultListener.getResult(jobId) != null) {
-                            return; // RabbitMQ already handled it!
+            if (!wasRabbitPublished && targetUrl != null) {
+                // RabbitMQ failed upfront -> execute direct HTTP call immediately
+                new Thread(() -> {
+                    try {
+                        log.info("Direct HTTP call to {} for jobId={}...", targetUrl, jobId);
+                        org.springframework.web.client.RestClient restClient = org.springframework.web.client.RestClient.builder()
+                                .baseUrl(targetUrl)
+                                .build();
+
+                        org.springframework.util.LinkedMultiValueMap<String, Object> body = new org.springframework.util.LinkedMultiValueMap<>();
+                        body.add("file", new org.springframework.core.io.ByteArrayResource(fileBytes) {
+                            @Override
+                            public String getFilename() {
+                                return fileName != null ? fileName : "resume.pdf";
+                            }
+                        });
+                        if (jd != null && !jd.trim().isEmpty()) {
+                            body.add("jobDescription", jd);
                         }
-                        log.info("RabbitMQ response delayed for jobId={}, triggering HTTP fallback...", jobId);
-                    }
 
-                    org.springframework.web.client.RestClient restClient = org.springframework.web.client.RestClient.builder()
-                            .baseUrl("http://localhost:8083")
-                            .build();
+                        @SuppressWarnings("unchecked")
+                        Map<String, Object> result = restClient.post()
+                                .uri("/api/resume/ats-score")
+                                .contentType(org.springframework.http.MediaType.MULTIPART_FORM_DATA)
+                                .body(body)
+                                .retrieve()
+                                .body(Map.class);
 
-                    org.springframework.util.LinkedMultiValueMap<String, Object> body = new org.springframework.util.LinkedMultiValueMap<>();
-                    body.add("file", new org.springframework.core.io.ByteArrayResource(fileBytes) {
-                        @Override
-                        public String getFilename() {
-                            return fileName != null ? fileName : "resume.pdf";
-                        }
-                    });
-                    if (jd != null && !jd.trim().isEmpty()) {
-                        body.add("jobDescription", jd);
-                    }
-
-                    @SuppressWarnings("unchecked")
-                    Map<String, Object> result = restClient.post()
-                            .uri("/api/resume/ats-score")
-                            .contentType(org.springframework.http.MediaType.MULTIPART_FORM_DATA)
-                            .body(body)
-                            .retrieve()
-                            .body(Map.class);
-
-                    AtsScoreEvent completedEvent = AtsScoreEvent.createResult(jobId, result);
-                    completedEvent.setUserEmail(finalEmail);
-                    resultListener.putResult(jobId, completedEvent);
-                    log.info("✅ Fallback ATS scoring completed successfully for jobId={}", jobId);
-                } catch (Exception ex) {
-                    log.error("❌ Fallback ATS scoring failed for jobId={}: {}", jobId, ex.getMessage());
-                    if (resultListener.getResult(jobId) == null) {
+                        AtsScoreEvent completedEvent = AtsScoreEvent.createResult(jobId, result);
+                        completedEvent.setUserEmail(finalEmail);
+                        resultListener.putResult(jobId, completedEvent);
+                        log.info("✅ Direct HTTP ATS scoring completed successfully for jobId={}", jobId);
+                    } catch (Exception ex) {
+                        log.error("❌ Direct HTTP ATS scoring failed for jobId={}: {}", jobId, ex.getMessage());
                         AtsScoreEvent failureEvent = AtsScoreEvent.createFailure(jobId, ex.getMessage());
                         failureEvent.setUserEmail(finalEmail);
                         resultListener.putResult(jobId, failureEvent);
                     }
-                }
-            }).start();
+                }).start();
+            }
 
             Map<String, Object> response = new HashMap<>();
             response.put("jobId", jobId);
