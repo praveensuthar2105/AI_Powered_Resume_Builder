@@ -6,6 +6,7 @@ import {
   Loader2, ArrowLeft, User, Briefcase, GraduationCap, Award, Wrench
 } from 'lucide-react';
 import { agentAPI } from '../../services/agentApi';
+import { resumeAPI } from '../../services/api';
 
 /* ─── Step metadata ─── */
 const STEPS = [
@@ -78,11 +79,11 @@ const CreateScratch = () => {
     setImprovedSuggestion('');
   };
 
-  /* ─── Final submit ─── */
+  /* ─── Final submit: Send collected data to AI for refinement & error correction ─── */
   const handleFinish = async () => {
     setCompilingState(true);
-    await new Promise(resolve => setTimeout(resolve, 2200));
     try {
+      // 1. Prepare raw collected fallback data
       const skillsArray = skillsCategories
         .map(cat => ({
           title: cat.category.trim(), category: cat.category.trim(),
@@ -95,18 +96,21 @@ const CreateScratch = () => {
       const achievementsArray = [];
       achievements.forEach(ach => {
         if (!ach.title.trim()) return;
-        if (ach.issuer.trim()) {
+        if (ach.issuer && ach.issuer.trim()) {
           certificationsArray.push({
             title: ach.title.trim(),
             issuingOrganization: ach.issuer.trim(),
-            year: ach.year.trim()
+            year: ach.year ? ach.year.trim() : ''
           });
         } else {
-          achievementsArray.push({ title: ach.title.trim(), year: ach.year.trim() });
+          achievementsArray.push({
+            title: ach.title.trim(),
+            year: ach.year ? ach.year.trim() : ''
+          });
         }
       });
 
-      const formattedResume = {
+      const fallbackFormattedResume = {
         data: {
           personalInformation: {
             fullName: personal.fullName, email: personal.email,
@@ -130,7 +134,76 @@ const CreateScratch = () => {
         selectedTemplate: 'ats'
       };
 
-      localStorage.setItem('generatedResume', JSON.stringify(formattedResume));
+      // 2. Build structured text representation for AI analysis & refinement
+      let textPayload = `CANDIDATE NAME: ${personal.fullName || 'Candidate'}\n`;
+      if (personal.email) textPayload += `EMAIL: ${personal.email}\n`;
+      if (personal.phoneNumber) textPayload += `PHONE: ${personal.phoneNumber}\n`;
+      if (personal.location) textPayload += `LOCATION: ${personal.location}\n`;
+      if (personal.linkedIn) textPayload += `LINKEDIN: ${personal.linkedIn}\n`;
+      if (personal.gitHub) textPayload += `GITHUB: ${personal.gitHub}\n`;
+      if (personal.summary) textPayload += `\nPROFESSIONAL SUMMARY / OBJECTIVE:\n${personal.summary}\n`;
+
+      if (experience.some(e => e.company || e.jobTitle || e.responsibility)) {
+        textPayload += `\nEXPERIENCE:\n`;
+        experience.forEach(exp => {
+          if (!exp.company && !exp.jobTitle && !exp.responsibility) return;
+          textPayload += `- Role: ${exp.jobTitle || 'Position'} at ${exp.company || 'Company'} (${exp.duration || ''}) ${exp.location ? `[${exp.location}]` : ''}\n`;
+          if (exp.responsibility) {
+            textPayload += `  Responsibilities / Achievements:\n  ${exp.responsibility}\n`;
+          }
+        });
+      }
+
+      if (education.some(ed => ed.university || ed.degree)) {
+        textPayload += `\nEDUCATION:\n`;
+        education.forEach(edu => {
+          if (!edu.university && !edu.degree) return;
+          textPayload += `- ${edu.degree || 'Degree'} from ${edu.university || 'University'}, Graduation: ${edu.graduationYear || ''} ${edu.location ? `[${edu.location}]` : ''}\n`;
+        });
+      }
+
+      if (skillsCategories.length > 0) {
+        textPayload += `\nTECHNICAL SKILLS:\n`;
+        skillsCategories.forEach(cat => {
+          if (cat.items) {
+            textPayload += `- ${cat.category}: ${cat.items}\n`;
+          }
+        });
+      }
+
+      if (achievements.some(a => a.title)) {
+        textPayload += `\nACHIEVEMENTS & CERTIFICATIONS:\n`;
+        achievements.forEach(ach => {
+          if (!ach.title) return;
+          textPayload += `- ${ach.title} ${ach.issuer ? `(Issued by ${ach.issuer})` : ''} ${ach.year ? `[${ach.year}]` : ''} ${ach.description ? `: ${ach.description}` : ''}\n`;
+        });
+      }
+
+      // 3. Send to AI for refinement, mistake correction, and ATS scoring optimization
+      let finalResume = fallbackFormattedResume;
+      try {
+        const aiResult = await resumeAPI.importFromText(textPayload);
+        if (aiResult && aiResult.success && aiResult.data) {
+          finalResume = {
+            data: {
+              ...aiResult.data,
+              personalInformation: {
+                fullName: personal.fullName || aiResult.data?.personalInformation?.fullName || '',
+                email: personal.email || aiResult.data?.personalInformation?.email || '',
+                phoneNumber: personal.phoneNumber || aiResult.data?.personalInformation?.phoneNumber || '',
+                location: personal.location || aiResult.data?.personalInformation?.location || '',
+                linkedIn: personal.linkedIn || aiResult.data?.personalInformation?.linkedIn || '',
+                gitHub: personal.gitHub || aiResult.data?.personalInformation?.gitHub || ''
+              }
+            },
+            selectedTemplate: 'ats'
+          };
+        }
+      } catch (aiErr) {
+        console.warn('AI Refinement fallback to direct data:', aiErr);
+      }
+
+      localStorage.setItem('generatedResume', JSON.stringify(finalResume));
       navigate('/edit-resume', { state: { triggerFeedback: true } });
     } catch (e) {
       console.error(e);
@@ -171,9 +244,9 @@ const CreateScratch = () => {
             <div className="w-16 h-16 rounded-full bg-teal-50 border border-teal-100 flex items-center justify-center mb-6 shadow-sm">
               <Loader2 className="w-8 h-8 text-[#0D9488] animate-spin" />
             </div>
-            <h3 className="text-2xl font-bold text-slate-800 tracking-tight">Compiling your resume...</h3>
+            <h3 className="text-2xl font-bold text-slate-800 tracking-tight">Refining & Optimizing Resume with AI...</h3>
             <p className="text-slate-500 text-sm mt-2 max-w-sm">
-              AI Writer active. Assembling sections and structuring for optimal ATS parsing.
+              Analyzing your input, enhancing bullet points with strong action verbs, fixing formatting errors, and optimizing for ATS.
             </p>
             <div className="w-64 h-1.5 bg-slate-100 rounded-full overflow-hidden relative mt-6 border border-slate-200/20">
               <div className="absolute top-0 bottom-0 w-24 bg-gradient-to-r from-[#14B8A6] to-[#0D9488] rounded-full animate-pulse-travel" />
@@ -680,7 +753,7 @@ const CreateScratch = () => {
                     onClick={handleFinish}
                     className="flex items-center gap-2 px-7 py-3 text-xs font-bold text-white bg-[#0D9488] rounded-full cursor-pointer hover:bg-[#0D9488]/90 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(13,148,136,0.25)] transition-all border-none"
                   >
-                    Assemble & Compile <Sparkles className="w-4 h-4" />
+                    Refine & Build with AI <Sparkles className="w-4 h-4" />
                   </button>
                 )}
               </div>

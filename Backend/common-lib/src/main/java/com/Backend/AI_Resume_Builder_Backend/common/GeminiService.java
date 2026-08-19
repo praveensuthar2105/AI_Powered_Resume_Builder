@@ -24,7 +24,7 @@ public class GeminiService {
 
     public GeminiService(
             @Value("${gemini.api.key:}") String apiKey,
-            @Value("${gemini.model:gemini-2.5-flash}") String model,
+            @Value("${gemini.model:gemini-3.6-flash}") String model,
             RestClient.Builder restClientBuilder) {
 
         if (apiKey == null || apiKey.trim().isEmpty()) {
@@ -40,15 +40,24 @@ public class GeminiService {
 
         org.springframework.http.client.SimpleClientHttpRequestFactory requestFactory = 
                 new org.springframework.http.client.SimpleClientHttpRequestFactory();
-        requestFactory.setConnectTimeout(10000); // 10 seconds
-        requestFactory.setReadTimeout(30000);    // 30 seconds
+        requestFactory.setConnectTimeout(15000); // 15 seconds
+        requestFactory.setReadTimeout(120000);   // 120 seconds for AI processing
+
+        org.springframework.http.converter.json.MappingJackson2HttpMessageConverter jsonConverter = 
+                new org.springframework.http.converter.json.MappingJackson2HttpMessageConverter();
+        jsonConverter.setSupportedMediaTypes(List.of(
+                org.springframework.http.MediaType.APPLICATION_JSON,
+                org.springframework.http.MediaType.APPLICATION_OCTET_STREAM,
+                org.springframework.http.MediaType.TEXT_PLAIN
+        ));
 
         this.restClient = restClientBuilder
                 .baseUrl(this.geminiUrl)
                 .requestFactory(requestFactory)
+                .messageConverters(converters -> converters.add(0, jsonConverter))
                 .build();
 
-        log.info("GeminiService initialized with Google AI Studio — URL: {}", this.geminiUrl);
+        log.info("GeminiService initialized with Google AI Studio — URL: {} (readTimeout=120s)", this.geminiUrl);
     }
 
     public Optional<String> generateContent(String prompt) {
@@ -56,28 +65,23 @@ public class GeminiService {
             throw new IllegalStateException("Gemini API Key is not configured.");
         }
 
-        String requestBody;
-        try {
-            Map<String, Object> request = Map.of(
-                    "contents", List.of(Map.of(
-                            "role", "user",
-                            "parts", List.of(Map.of("text", prompt)))),
-                    "generationConfig", Map.of(
-                            "temperature", 0,
-                            "topP", 1,
-                            "topK", 1,
-                            "responseMimeType", "application/json"));
-            requestBody = OBJECT_MAPPER.writeValueAsString(request);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to serialize Gemini API request", e);
-        }
+        Map<String, Object> request = Map.of(
+                "contents", List.of(Map.of(
+                        "role", "user",
+                        "parts", List.of(Map.of("text", prompt)))),
+                "generationConfig", Map.of(
+                        "temperature", 0,
+                        "topP", 1,
+                        "topK", 1,
+                        "responseMimeType", "application/json"));
 
         JsonNode response;
         try {
             response = restClient.post()
                     .uri(uriBuilder -> uriBuilder.queryParam("key", apiKey).build())
-                    .header("Content-Type", "application/json")
-                    .body(requestBody)
+                    .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                    .accept(org.springframework.http.MediaType.APPLICATION_JSON, org.springframework.http.MediaType.ALL)
+                    .body(request)
                     .retrieve()
                     .body(JsonNode.class);
         } catch (org.springframework.web.client.HttpClientErrorException e) {

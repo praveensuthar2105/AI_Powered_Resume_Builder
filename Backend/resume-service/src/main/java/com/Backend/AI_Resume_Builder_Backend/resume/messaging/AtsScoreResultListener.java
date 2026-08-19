@@ -52,4 +52,8 @@ public class AtsScoreResultListener {
     public AtsScoreEvent consumeResult(String jobId) {
         return results.remove(jobId);
     }
+
+    public void putResult(String jobId, AtsScoreEvent event) {
+        results.put(jobId, event);
+    }
 }

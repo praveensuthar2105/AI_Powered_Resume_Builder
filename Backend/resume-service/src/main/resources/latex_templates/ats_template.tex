@@ -28,6 +28,13 @@
 {\small {{PHONE_NUMBER}} $|$ \href{mailto:{{EMAIL}}}{{{EMAIL}}}{{#LINKEDIN}} $|$ \href{{{LINKEDIN}}}{LinkedIn}{{/LINKEDIN}}{{#GITHUB}} $|$ \href{{{GITHUB}}}{GitHub}{{/GITHUB}}{{#PORTFOLIO}} $|$ \href{{{PORTFOLIO}}}{Portfolio}{{/PORTFOLIO}}{{#LOCATION}} $|$ {{LOCATION}}{{/LOCATION}}}
 \end{center}
 
+%BEGIN_SUMMARY
+{{#HAS_SUMMARY}}
+\section*{Professional Summary}
+{{SUMMARY}}
+{{/HAS_SUMMARY}}
+%END_SUMMARY
+
 %BEGIN_EDUCATION
 {{#HAS_EDUCATION}}
 \section*{Education}

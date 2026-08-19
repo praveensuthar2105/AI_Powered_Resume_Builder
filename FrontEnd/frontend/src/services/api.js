@@ -47,21 +47,40 @@ apiClient.interceptors.response.use(
 
 export const resumeAPI = {
   generateResume: async (userResumeDescription, templateType = 'modern') => {
-    const response = await apiClient.post('/resume/generate', {
+    const response = await apiClient.post('/resume/generate/async', {
       userResumeDescription,
       templateType,
     });
-    let data = response?.data;
-    // Some backends return JSON as string (text/plain). Parse if needed.
-    if (typeof data === 'string') {
-      try {
-        data = JSON.parse(data);
-      } catch (e) {
-        console.error('Failed to parse generateResume response as JSON:', e, data);
-        throw new Error('Invalid response from server. Expected JSON.');
+
+    const jobId = response?.data?.jobId;
+    if (!jobId) {
+      throw new Error('Failed to start async resume generation: No jobId returned');
+    }
+
+    // Poll status until completed or max retries (60 attempts * 2s = 120s max)
+    const maxAttempts = 60;
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      const statusRes = await apiClient.get(`/resume/generate/status/${jobId}`);
+      const statusData = statusRes?.data;
+
+      if (statusData?.status === 'COMPLETED') {
+        let data = statusData.data;
+        if (typeof data === 'string') {
+          try {
+            data = JSON.parse(data);
+          } catch (e) {
+            console.error('Failed to parse generateResume data as JSON:', e, data);
+          }
+        }
+        return data;
+      } else if (statusData?.status === 'FAILED') {
+        throw new Error(statusData?.error || 'Resume generation failed on server');
       }
     }
-    return data;
+
+    throw new Error('Resume generation timed out after 2 minutes. Please try again.');
   },
 
   saveResume: async (resumeData, templateType = 'ats') => {
@@ -79,21 +98,42 @@ export const resumeAPI = {
       formData.append('jobDescription', jobDescription.trim());
     }
 
-    const response = await apiClient.post('/resume/ats-score', formData, {
+    // Submit async ATS request via RabbitMQ
+    const response = await apiClient.post('/resume/ats-score/async', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
     });
-    let data = response?.data;
-    if (typeof data === 'string') {
-      try {
-        data = JSON.parse(data);
-      } catch (e) {
-        console.error('Failed to parse calculateAtsScore response as JSON:', e, data);
-        throw new Error('Invalid response from server. Expected JSON.');
+
+    const jobId = response?.data?.jobId;
+    if (!jobId) {
+      throw new Error('Failed to start async ATS scoring: No jobId returned');
+    }
+
+    // Poll status until completed or max retries (120 attempts * 2s = 240s / 4 mins max)
+    const maxAttempts = 120;
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      const statusRes = await apiClient.get(`/resume/ats-score/status/${jobId}`);
+      const statusData = statusRes?.data;
+
+      if (statusData?.status === 'COMPLETED') {
+        let result = statusData.result;
+        if (typeof result === 'string') {
+          try {
+            result = JSON.parse(result);
+          } catch (e) {
+            console.error('Failed to parse calculateAtsScore result as JSON:', e, result);
+          }
+        }
+        return result;
+      } else if (statusData?.status === 'FAILED') {
+        throw new Error(statusData?.error || 'ATS analysis failed on server');
       }
     }
-    return data;
+
+    throw new Error('ATS analysis request timed out. Please try again.');
   },
 
   importFromPdf: async (file, source = 'general') => {

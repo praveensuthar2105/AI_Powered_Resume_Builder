@@ -97,11 +97,12 @@
 {\color{UI_blue} \hrulefill}
 \end{center}
 \vspace{-0.25cm}
-
-{{#SUMMARY}}
-\hskills{} {{SUMMARY}}
-\vspace{-0.2cm}
-{{/SUMMARY}}
+%BEGIN_SUMMARY
+{{#HAS_SUMMARY}}
+\section{Professional Summary}
+{{SUMMARY}}
+{{/HAS_SUMMARY}}
+%END_SUMMARY
 
 %BEGIN_EDUCATION
 {{#HAS_EDUCATION}}

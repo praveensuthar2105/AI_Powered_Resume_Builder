@@ -59,11 +59,11 @@ const ModernTemplate = ({ data }) => {
       </div>
 
       {/* Professional Summary */}
-      {data?.summary && (
+      {(data?.summary || data?.professionalSummary || data?.profile || data?.objective || pi?.summary) && (
         <div className="resume-section">
-          <h2 className="section-title">Summary</h2>
+          <h2 className="section-title">Professional Summary</h2>
           <div className="section-content">
-            <p>{data.summary}</p>
+            <p>{data?.summary || data?.professionalSummary || data?.profile || data?.objective || pi?.summary}</p>
           </div>
         </div>
       )}

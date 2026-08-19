@@ -280,14 +280,15 @@ const EditResume = () => {
   const [sectionConfig, setSectionConfig] = useState(() => {
     // Attempt to load from custom key or fallback to default
     const defaults = {
-      order: ['summary', 'skills', 'experience', 'education', 'projects', 'certifications'],
+      order: ['summary', 'skills', 'experience', 'education', 'projects', 'certifications', 'achievements'],
       titles: {
         summary: 'Professional Summary',
         skills: 'Skills',
         experience: 'Work Experience',
         education: 'Education',
         projects: 'Projects',
-        certifications: 'Certifications'
+        certifications: 'Certifications',
+        achievements: 'Achievements'
       },
       hidden: []
     };
@@ -441,8 +442,9 @@ const EditResume = () => {
     const contactLine = contactParts.length > 0 ? contactParts.join(' $|$ ') : '';
 
     let summarySection = '';
-    if (data?.summary && data.summary.trim()) {
-      summarySection = `\\section*{Summary}\n${escapeLatex(data.summary)}`;
+    const summaryText = data?.summary || data?.professionalSummary || data?.profile || data?.objective || '';
+    if (summaryText && summaryText.trim()) {
+      summarySection = `\\section*{Professional Summary}\n${escapeLatex(summaryText)}`;
     }
 
     let educationSection = '';
@@ -808,7 +810,7 @@ ${sections}
           location: pi.location || '',
           linkedIn: pi.linkedIn || pi.linkedin || '',
           gitHub: pi.gitHub || pi.github || '',
-          summary: data.summary || '',
+          summary: data.summary || data.professionalSummary || data.profile || data.objective || pi.summary || '',
           skills: skillsRaw.map(skill => (
             typeof skill === 'string'
               ? { title: 'Skills', level: 'Intermediate', items: [skill] }
@@ -1712,50 +1714,59 @@ ${sections}
                           ))
                         )}
                       </div>
-
-                      {/* Achievements Sub-Section */}
-                      <div>
-                        <div className="flex justify-between items-center mb-4 pb-1.5 border-b border-slate-200/50">
-                          <h4 className="text-[11px] font-bold uppercase tracking-wider text-teal-700">Achievements</h4>
-                          <button 
-                            onClick={() => {
-                              setFormData(prev => ({ ...prev, achievements: [...prev.achievements, { title: '', year: '' }] }));
-                              handleFieldChange();
-                            }}
-                            className="px-2.5 py-1 text-[10px] font-bold text-teal-600 hover:text-teal-800 bg-teal-50 hover:bg-teal-100/50 border border-teal-200/40 rounded-lg flex items-center gap-1 transition-all cursor-pointer shadow-sm"
-                          >
-                            <span className="material-symbols-outlined text-[12px]">add</span> Add Achievement
-                          </button>
-                        </div>
-                        
-                        {formData.achievements.length === 0 ? (
-                          <p className="text-[11px] text-slate-400 italic">No achievements added yet.</p>
-                        ) : (
-                          formData.achievements.map((ach, index) => (
-                            <div key={index} className="relative border-l-2 border-teal-500/20 pl-5 py-2 mb-4 group transition-all hover:border-teal-500">
-                              <button 
-                                onClick={() => {
-                                  setFormData(prev => ({ ...prev, achievements: prev.achievements.filter((_, i) => i !== index) }));
-                                  handleFieldChange();
-                                }} 
-                                className="absolute top-4 right-4 w-8 h-8 rounded-xl bg-slate-100 hover:bg-rose-50 border border-transparent hover:border-rose-100 text-slate-500 hover:text-rose-500 flex items-center justify-center transition-all cursor-pointer"
-                              >
-                                <span className="material-symbols-outlined text-[18px]">delete</span>
-                              </button>
-                              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                <span className="col-span-2">
-                                  <FormItem label="Achievement Title" value={ach.title} onChange={(e) => {
-                                    const newAchs = [...formData.achievements]; newAchs[index] = { ...newAchs[index], title: e.target.value }; updateField('achievements', newAchs);
-                                  }} placeholder="e.g. Won 1st place in National Hackathon" />
-                                </span>
-                                <FormItem label="Year" value={ach.year} onChange={(e) => {
-                                  const newAchs = [...formData.achievements]; newAchs[index] = { ...newAchs[index], year: e.target.value }; updateField('achievements', newAchs);
-                                }} placeholder="e.g. 2024" />
-                              </div>
+                    </SectionCard>
+                  );
+                } else if (sectionKey === 'achievements') {
+                  cardElement = (
+                    <SectionCard 
+                      icon="emoji_events" 
+                      title={displayTitle} 
+                      subtitle="Key Accomplishments" 
+                      buttonText="Add Achievement" 
+                      onAdd={() => {
+                        setFormData(prev => ({ ...prev, achievements: [...prev.achievements, { title: '', year: '' }] }));
+                        handleFieldChange();
+                      }}
+                      value="achievements"
+                      isExpanded={activeAccordionSections.includes('achievements')}
+                      onTitleDoubleClick={() => {
+                        setEditingSectionKey('achievements');
+                        setEditingTitleValue(displayTitle);
+                      }}
+                      isEditingTitle={isEditing}
+                      editingTitleValue={editingTitleValue}
+                      onTitleChange={(e) => setEditingTitleValue(e.target.value)}
+                      onTitleBlur={() => submitRename('achievements')}
+                      onTitleKeyDown={(e) => e.key === 'Enter' && submitRename('achievements')}
+                      headerAction={reorderAction}
+                    >
+                      {formData.achievements.length === 0 ? (
+                        <p className="text-[11px] text-slate-400 italic">No achievements added yet.</p>
+                      ) : (
+                        formData.achievements.map((ach, index) => (
+                          <div key={index} className="relative border-l-2 border-amber-500/20 pl-5 py-2 mb-4 group transition-all hover:border-amber-500">
+                            <button 
+                              onClick={() => {
+                                setFormData(prev => ({ ...prev, achievements: prev.achievements.filter((_, i) => i !== index) }));
+                                handleFieldChange();
+                              }} 
+                              className="absolute top-4 right-4 w-8 h-8 rounded-xl bg-slate-100 hover:bg-rose-50 border border-transparent hover:border-rose-100 text-slate-500 hover:text-rose-500 flex items-center justify-center transition-all cursor-pointer"
+                            >
+                              <span className="material-symbols-outlined text-[18px]">delete</span>
+                            </button>
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                              <span className="col-span-2">
+                                <FormItem label="Achievement Title" value={ach.title} onChange={(e) => {
+                                  const newAchs = [...formData.achievements]; newAchs[index] = { ...newAchs[index], title: e.target.value }; updateField('achievements', newAchs);
+                                }} placeholder="e.g. Won 1st place in National Hackathon" />
+                              </span>
+                              <FormItem label="Year" value={ach.year} onChange={(e) => {
+                                const newAchs = [...formData.achievements]; newAchs[index] = { ...newAchs[index], year: e.target.value }; updateField('achievements', newAchs);
+                              }} placeholder="e.g. 2024" />
                             </div>
-                          ))
-                        )}
-                      </div>
+                          </div>
+                        ))
+                      )}
                     </SectionCard>
                   );
                 }

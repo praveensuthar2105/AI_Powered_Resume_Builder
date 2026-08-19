@@ -123,9 +123,29 @@ public class LatexServiceImpl implements LatexService {
         template = replacePlaceholder(template, "GITHUB_DISPLAY",
                 escapeLatexSpecialChars(githubDisplay));
 
-        // Summary
-        template = handleOptionalSection(template, "SUMMARY",
-                getStringValue(resumeData, "summary"));
+        // Summary with alias fallbacks
+        String summaryVal = getStringValue(resumeData, "summary");
+        if (summaryVal == null || summaryVal.trim().isEmpty()) {
+            summaryVal = getStringValue(personalInfo, "summary");
+        }
+        if (summaryVal == null || summaryVal.trim().isEmpty()) {
+            summaryVal = getStringValue(resumeData, "professionalSummary");
+        }
+        if (summaryVal == null || summaryVal.trim().isEmpty()) {
+            summaryVal = getStringValue(resumeData, "profile");
+        }
+        if (summaryVal == null || summaryVal.trim().isEmpty()) {
+            summaryVal = getStringValue(resumeData, "objective");
+        }
+
+        if (summaryVal != null && !summaryVal.trim().isEmpty()) {
+            template = template.replace("{{#HAS_SUMMARY}}", "");
+            template = template.replace("{{/HAS_SUMMARY}}", "");
+            template = replacePlaceholder(template, "SUMMARY", summaryVal);
+        } else {
+            template = removeSection(template, "HAS_SUMMARY");
+            template = handleOptionalSection(template, "SUMMARY", "");
+        }
 
         // Pre-render each section segment first inside the template
         template = handleSkillsSection(template, resumeData);
@@ -169,12 +189,12 @@ public class LatexServiceImpl implements LatexService {
 
         // Standard fallback order if none was provided
         if (order == null || order.isEmpty()) {
-            order = Arrays.asList("education", "experience", "projects", "skills", "certifications", "achievements");
+            order = Arrays.asList("summary", "skills", "experience", "education", "projects", "certifications", "achievements");
         }
 
         // Segment extraction helper
         Map<String, String> sectionContents = new HashMap<>();
-        List<String> allKeys = Arrays.asList("education", "experience", "projects", "skills", "certifications", "achievements");
+        List<String> allKeys = Arrays.asList("summary", "education", "experience", "projects", "skills", "certifications", "achievements");
 
         for (String key : allKeys) {
             String beginTag = "%BEGIN_" + key.toUpperCase();
@@ -199,6 +219,10 @@ public class LatexServiceImpl implements LatexService {
                     if (customTitle != null && !customTitle.trim().isEmpty()) {
                         // Replace standard latex title declarations inside the inner content
                         String escapedTitle = escapeLatexSpecialChars(customTitle);
+                        innerContent = innerContent.replace("\\section*{Professional Summary}", "\\section*{" + escapedTitle + "}");
+                        innerContent = innerContent.replace("\\section*{Summary}", "\\section*{" + escapedTitle + "}");
+                        innerContent = innerContent.replace("\\section{Professional Summary}", "\\section{" + escapedTitle + "}");
+                        innerContent = innerContent.replace("\\section{Summary}", "\\section{" + escapedTitle + "}");
                         innerContent = innerContent.replace("\\section*{Education}", "\\section*{" + escapedTitle + "}");
                         innerContent = innerContent.replace("\\section{Education}", "\\section{" + escapedTitle + "}");
                         innerContent = innerContent.replace("\\section*{Experience}", "\\section*{" + escapedTitle + "}");

@@ -28,17 +28,17 @@ spring:
           predicates:
             - Path=/oauth2/**, /login/**, /auth/**, /api/auth/**, /api/user/**, /api/admin/**, /api/public/**, /api/health/**
             
-        # Resume Service Routes (Resume Generation, Sync, LaTeX Compile, WebSockets)
+        # Resume Service Routes (Resume Generation, Sync, LaTeX Compile, WebSockets, Async ATS)
         - id: resume-route
           uri: ${RESUME_SERVICE_URI:lb://resume-service}
           predicates:
-            - Path=/api/resume/generate, /api/latex/**, /api/resume-sync/**, /ws-resume/**, /ws-sync/**
+            - Path=/api/resume/generate/**, /api/resume/generate, /api/resume/ats-score/async, /api/resume/ats-score/status/**, /api/latex/**, /api/resume-sync/**, /ws-resume/**, /ws-sync/**
             
         # Intelligence Service Routes (ATS Score, Agent Chat, Imports)
         - id: intelligence-route
           uri: lb://intelligence-service
           predicates:
-            - Path=/api/resume/ats-score, /api/agent/**, /api/resume/import/**
+            - Path=/api/resume/ats-score/**, /api/resume/ats-score, /api/agent/**, /api/resume/import/**
 
 eureka:
   instance:
@@ -48,3 +48,10 @@ eureka:
       defaultZone: ${EUREKA_URI:http://localhost:8761/eureka/}
     register-with-eureka: true
     fetch-registry: true
+
+logging:
+  level:
+    com.Backend.AI_Resume_Builder_Backend: DEBUG
+    org.springframework.cloud.gateway: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.security: DEBUG
