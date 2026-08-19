@@ -9,8 +9,8 @@ services:
     ports:
       - "8083:8083"
     environment:
-      - EUREKA_URI=http://130.210.40.244:8761/eureka/
-      - EUREKA_INSTANCE_IP_ADDRESS=92.4.84.21
+      - EUREKA_URI=${EUREKA_URI:-http://130.210.40.244:8761/eureka/}
+      - EUREKA_INSTANCE_IP_ADDRESS=${EUREKA_INSTANCE_IP_ADDRESS:-92.4.84.21}
       - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
       - DB_URL=${INTELLIGENCE_DB_URL}
       - DB_USERNAME=${DB_USERNAME}
