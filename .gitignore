@@ -109,5 +109,22 @@ stop-backend.bat
 saas_redesign_plan.md
 redesign_progress_tracker.md
 
+# AI Agent & IDE Tools
+.agents/
+.antigravitycli/
+
+# Python Virtual Environments
+venv/
+.venv/
+ENV/
+env/
+
+# Build & Vite Caches
+.vite/
+
+# Compiled Class Files
+TestDB.class
+
+
 
 
