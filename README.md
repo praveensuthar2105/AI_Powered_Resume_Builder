@@ -128,8 +128,8 @@ graph TD
 
 | Machine / Platform | IP / Host Domain | Hosted Services | Deployed Stack File |
 | :--- | :--- | :--- | :--- |
-| **Oracle Cloud VM 1** | `92.4.84.21` | `intelligence-service` | `docker-compose.vm1.yml` |
-| **Oracle Cloud VM 2** | `130.210.40.244` | `discovery-server`, `gateway-service`, `identity-service`, `rabbitmq`, Nginx | `docker-compose.vm2.yml` / `docker-compose.single-vm.yml` |
+| **Oracle Cloud VM 1** | Oracle Cloud | `intelligence-service` | `docker-compose.vm1.yml` |
+| **Oracle Cloud VM 2** | Oracle Cloud | `discovery-server`, `gateway-service`, `identity-service`, `rabbitmq`, Nginx | `docker-compose.vm2.yml` / `docker-compose.single-vm.yml` |
 | **Render Cloud** | `resify-resume-service.onrender.com` | `resume-service` (LaTeX Compiler Engine) | Docker deployment hook via Render |
 | **Vercel Network** | `atsresify.me` / `www.atsresify.me` | Single Page Application (React 19 / Vite) | Automatic deployment via Git push |
 | **Aiven Cloud** | Cloud MySQL 8.0 Cluster | `identity_db` relational database | TLS Connection (`3306`) |
@@ -290,7 +290,7 @@ docker compose up -d --build
 Production deployment is automated via **GitHub Actions** workflows (`.github/workflows/`):
 
 1. **Git Push to `main`**:
-   - Triggers `vm-cd.yml` which SSHs into VM 1 (`92.4.84.21`) and VM 2 (`130.210.40.244`), pulls the latest code, compiles Maven JARs, and runs `docker compose -f docker-compose.vm*.yml up -d --build`.
+   - Triggers `vm-cd.yml` which SSHs into VM 1 and VM 2, pulls the latest code, compiles Maven JARs, and runs `docker compose -f docker-compose.vm*.yml up -d --build`.
    - Triggers Render deploy hook for `resume-service`.
    - Vercel automatically builds and deploys the React 19 frontend to `https://atsresify.me`.
 
