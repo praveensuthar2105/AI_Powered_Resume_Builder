@@ -355,7 +355,8 @@ const EditResume = () => {
     experience: false,
     education: false,
     projects: false,
-    certifications: false
+    certifications: false,
+    achievements: false
   });
 
   const toggleSection = (sec) => {
@@ -1041,8 +1042,9 @@ ${sections}
     .map(([key]) => key);
 
   const handleAccordionChange = (val) => {
-    const newExpanded = { ...expandedSections };
-    Object.keys(newExpanded).forEach(key => {
+    const newExpanded = {};
+    const allKeys = new Set(['personal', ...sectionConfig.order, ...Object.keys(expandedSections)]);
+    allKeys.forEach(key => {
       newExpanded[key] = val.includes(key);
     });
     setExpandedSections(newExpanded);
@@ -1236,6 +1238,15 @@ ${sections}
     handleFieldChange();
   };
 
+  const addAchievement = () => {
+    setFormData(prev => ({ ...prev, achievements: [...prev.achievements, { title: '', year: '' }] }));
+    handleFieldChange();
+  };
+  const removeAchievement = (index) => {
+    setFormData(prev => ({ ...prev, achievements: prev.achievements.filter((_, i) => i !== index) }));
+    handleFieldChange();
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center font-sans">
@@ -1249,6 +1260,7 @@ ${sections}
 
   return (
     <div className="h-[calc(100vh-64px)] w-full text-slate-900 font-sans relative overflow-hidden flex flex-col" style={{ background: 'linear-gradient(180deg, #FBFEFC 0%, #F0F9F6 100%)' }}>
+      <SEO title="Edit Resume | ATS Resify" noindex={true} />
       <Helmet>
         <style>{`
           ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -1723,10 +1735,7 @@ ${sections}
                       title={displayTitle} 
                       subtitle="Key Accomplishments" 
                       buttonText="Add Achievement" 
-                      onAdd={() => {
-                        setFormData(prev => ({ ...prev, achievements: [...prev.achievements, { title: '', year: '' }] }));
-                        handleFieldChange();
-                      }}
+                      onAdd={addAchievement}
                       value="achievements"
                       isExpanded={activeAccordionSections.includes('achievements')}
                       onTitleDoubleClick={() => {
@@ -1746,10 +1755,7 @@ ${sections}
                         formData.achievements.map((ach, index) => (
                           <div key={index} className="relative border-l-2 border-amber-500/20 pl-5 py-2 mb-4 group transition-all hover:border-amber-500">
                             <button 
-                              onClick={() => {
-                                setFormData(prev => ({ ...prev, achievements: prev.achievements.filter((_, i) => i !== index) }));
-                                handleFieldChange();
-                              }} 
+                              onClick={() => removeAchievement(index)} 
                               className="absolute top-4 right-4 w-8 h-8 rounded-xl bg-slate-100 hover:bg-rose-50 border border-transparent hover:border-rose-100 text-slate-500 hover:text-rose-500 flex items-center justify-center transition-all cursor-pointer"
                             >
                               <span className="material-symbols-outlined text-[18px]">delete</span>
